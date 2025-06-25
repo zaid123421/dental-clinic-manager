@@ -1,13 +1,10 @@
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import Login from "./pages/Authentication/Login";
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="bg-red-500">
-        werwe
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Login />}></Route>
+    </Routes>
   );
 }
-
-export default App;
