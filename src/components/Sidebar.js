@@ -36,7 +36,7 @@ export default function Sidebar() {
         </NavLink>
         <NavLink to="/" className={({ isActive }) => `p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
         isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}
-        ${responsive ? 'w-full' : 'min-w-[175px]'}`}>
+        ${responsive ? 'w-full' : 'min-w-[210px]'}`}>
           <FaBookMedical className={`${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>
           <span className={`${responsive ? 'hidden' : 'block'}`}>Medications Plans</span>
         </NavLink>
