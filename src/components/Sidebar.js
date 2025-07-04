@@ -23,25 +23,28 @@ export default function Sidebar() {
         <img className="w-[75px] h-[75px] md:w-[100px] md:h-[100px] rounded-[50%]" src={avatar} alt="profile_picture"></img>
         <h1 className="text-[16px] md:text-[20px] font-extrabold my-5">Zaid Alshamaa</h1>
       </div>
-      <ul className="text-[14px] text-center md:text-[18px]">
-        <NavLink to="/overview" className={({ isActive }) => `p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
-        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}`}>
+      <ul className="text-[14px] md:text-[18px]">
+        <NavLink to="/overview" className={({ isActive }) => `md:w-[220px] p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
+        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}
+        ${responsive ? 'w-full' : 'w-[200px]'}`}>
           <MdDashboard className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>
           <span className={`md:block ${responsive ? 'hidden' : 'inline'}`}>Overview</span>
         </NavLink>
-        <NavLink to="/medications" className={({ isActive }) => `p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
-        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}`}>
+        <NavLink to="/medications" className={({ isActive }) => `md:w-[220px] p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
+        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}
+        ${responsive ? 'w-full' : 'w-[200px]'}`}>
           <RiMedicineBottleFill className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>
           <span className={`md:block ${responsive ? 'hidden' : 'block'}`}>Medications</span>
         </NavLink>
-        <NavLink to="/" className={({ isActive }) => `p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
+        <NavLink to="/" className={({ isActive }) => `md:w-[220px] p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
         isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}
-        ${responsive ? 'w-full' : 'min-w-[210px]'}`}>
+        ${responsive ? 'w-full' : 'w-[200px]'}`}>
           <FaBookMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>
           <span className={`md:block ${responsive ? 'hidden' : 'block'}`}>Medications Plans</span>
         </NavLink>
-        <NavLink to="/" className={({ isActive }) => `p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
-        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}`}>
+        <NavLink to="/" className={({ isActive }) => `md:w-[220px] p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] ${
+        isActive ? 'text-[#089bab] bg-white' : 'hover:text-[#089bab] hover:bg-white'}
+        ${responsive ? 'w-full' : 'w-[200px]'}`}>
           <FaNotesMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>
           <span className={`md:block ${responsive ? 'hidden' : 'block'}`}>Treatment Notes</span>
         </NavLink>
