@@ -2,7 +2,11 @@ import { useState } from "react";
 import Manager from "../../assets/Manager.webp";
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
+
 export default function Login() {
+
+  const nav = useNavigate();
 
   const [formData, setFormData] = useState({
     phoneNumber: null,
@@ -17,12 +21,10 @@ export default function Login() {
     <div className="flex items-center justify-center h-screen bg-blue-100 md:p-5">
       <div className="flex flex-col-reverse md:flex-row bg-white w-full h-full md:w-[900px] md:h-[500px] rounded-2xl shadow-2xl">
         <div className="flex-1 flex flex-col">
-          <p className="mt-5 text-center text-3xl font-medium w-full text-blue-500 ">
-            Manager Dashboard
-          </p>
           <p className="mt-5 md:mt-10 mb-3 text-2xl font-bold text-center"> Sign in</p>
-          <form className="p-3 md:p-10" onSubmit="">
+          <form className="p-3 md:p-10" onSubmit={() => nav("/overview")}>
             <FormInput
+              className="w-full"
               autoFocus
               name="phoneNumber"
               label="Phone Number"
@@ -31,13 +33,16 @@ export default function Login() {
               onChange={handleChange}
             />
             <FormInput
+              className="w-full"
               name="paswword"
               label="Password"
               type="password"
               placeholder="Enter Your Password"
               onChange={handleChange}
             />
-            <Button label="Sign in" />
+            <Button variant="primary" className="mt-10 w-full">
+              Sign in
+            </Button>
           </form>
         </div>
         <div className="md:flex-1 flex justify-center mt-10 md:mt-0">
