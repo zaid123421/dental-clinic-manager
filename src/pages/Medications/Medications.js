@@ -1,6 +1,6 @@
 import Button from "../../components/Button";
-import { FaCirclePlus } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
+import { FiPlus } from "react-icons/fi";
 import FormInput from "../../components/FormInput";
 import Title from "../../components/Title";
 import Sidebar from "../../components/Sidebar";
@@ -9,6 +9,7 @@ import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { BaseUrl, ImageUrl } from "../../config";
 import axios from "axios";
+import PlusButton from "../../components/PlusButton";
 
 export default function Medications() {
   const [cards, setCards] = useState([]);
@@ -50,16 +51,16 @@ export default function Medications() {
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
           <Button
-            className="mr-5 w-[200px]"
+            className="md:mr-5 md:w-[200px] hidden md:flex"
             variant="primary"
-            icon={<FaCirclePlus className="mr-3" />}
-          >
-            Add Medication
-          </Button>
+            icon={<FiPlus className="mr-3 text-2xl" />}
+            children="Add Medication"
+          />
+          <PlusButton />
           <FormInput
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
-            className="w-[300px] bg-gray-300 placeholder-black"
+            className="w-[200px] md:w-[300px] bg-gray-300 placeholder-black"
           />
         </div>
         <div className="content grid md:grid-cols-2 lg:grid-cols-4 gap-2 py-5">

@@ -1,2 +1,2 @@
-export const BaseUrl = "http://localhost:8000/api/v1";
-export const ImageUrl = "http://localhost:8000/";
+export const BaseUrl = "https://n3fh9.ciroue.com/api/v1";
+export const ImageUrl = "https://n3fh9.ciroue.com/";
