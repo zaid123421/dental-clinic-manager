@@ -37,7 +37,7 @@ export default function Medications() {
       key={index}
       className="shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
     >
-      <div className="bg-blue-300 rounded-md h-[100px] bg-contain">
+      <div className="bg-blue-300 rounded-md h-[150px] md:h-[100px] bg-contain">
         <img
           className="rounded-md w-full h-full"
           src={`${ImageUrl}${card.image}`}
