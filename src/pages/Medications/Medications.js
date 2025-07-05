@@ -24,7 +24,6 @@ export default function Medications() {
       })
       .then((data) => {
         setCards(data.data.data);
-        console.log(data);
       })
       .catch((error) => {
         console.log(error);
