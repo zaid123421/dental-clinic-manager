@@ -10,7 +10,7 @@ export default function FormInput({
   icon
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full">
       {label && <label className="font-semibold my-4">{label}</label>}
       <div className="relative">
         {icon && (
@@ -21,7 +21,7 @@ export default function FormInput({
         <input
           autoFocus={autoFocus}
           className={`
-            px-4 py-[5px] border-[2px] border-transparent outline-none rounded-lg focus:border-[#089bab]
+            px-4 py-[5px] border-transparent border-[2px] outline-none rounded-lg focus:border-[#089bab]
             ${icon ? 'pl-10' : ''}
             ${className}
           `}

@@ -10,48 +10,60 @@ import { useEffect, useState } from "react";
 import { BaseUrl, ImageUrl } from "../../config";
 import axios from "axios";
 import PlusButton from "../../components/PlusButton";
+import "../../index.css";
 
 export default function Medications() {
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
-    axios.get(`${BaseUrl}/medication`, {
-      headers: {
-        Accept: "application/json",
-        // Authorization: `Bearer ${token}`,
-      },
-    }).then((data) => {
-      setCards(data.data.data);
-    }).catch((error) => {
-      console.log(error)
-    })
-  },[])
+    axios
+      .get(`${BaseUrl}/medication`, {
+        headers: {
+          Accept: "application/json",
+          // Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((data) => {
+        setCards(data.data.data);
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   const showCards = cards.map((card, index) => (
-    <div key={index} className="shadow-xl bg-white rounded-xl p-5 flex flex-col justify-between text-center">
-      <div className="bg-blue-300 rounded-md h-[200px] bg-contain">
-        <img className="rounded-md w-full h-full" src={`${ImageUrl}${card.image}`} alt="medication_image"/>
+    <div
+      key={index}
+      className="shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
+    >
+      <div className="bg-blue-300 rounded-md h-[100px] bg-contain">
+        <img
+          className="rounded-md w-full h-full"
+          src={`${ImageUrl}${card.image}`}
+          alt="medication_image"
+        />
       </div>
-      <p className="my-5 font-bold">{card.name}</p>
+      <p className="my-3 font-bold">{card.name}</p>
       <div className="flex text-2xl justify-center">
-        <div className="bg-blue-500 p-2 mr-5 text-white rounded-xl border-2 border-blue-500 hover:bg-transparent hover:text-black transition duration-[0.3s] cursor-pointer">
-          <MdEdit />
+        <div className="bg-[#089bab] p-1 md:p-2 mr-5 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdEdit className="text-sm md:text-lg" />
         </div>
-        <div className="bg-red-500 p-2 text-white rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-[0.3s] cursor-pointer">
-          <MdDelete />
+        <div className="bg-red-500 p-1 md:p-2 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdDelete className="text-sm md:text-lg" />
         </div>
       </div>
     </div>
-  ))
+  ));
 
   return (
-    <div className="flex bg-[#089bab1c]">
+    <>
       <Sidebar />
-      <div className="p-5 flex-1">
+      <div className="page-content p-5 bg-[#089bab1c] text-sm md:text-lg">
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
           <Button
-            className="md:mr-5 md:w-[200px] hidden md:flex"
+            className="md:mr-5 min-w-[200px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication"
@@ -60,13 +72,31 @@ export default function Medications() {
           <FormInput
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
-            className="w-[200px] md:w-[300px] bg-gray-300 placeholder-black"
+            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
           />
         </div>
-        <div className="content grid md:grid-cols-2 lg:grid-cols-4 gap-2 py-5">
+        <div className="content grid md:grid-cols-3 lg:grid-cols-6 gap-3 py-5">
+          <div className="shadow-xl bg-white rounded-xl p-5 flex flex-col justify-between text-center">
+            <div className="bg-blue-300 rounded-md h-[100px] bg-contain">
+              <img
+                className="rounded-md w-full h-full"
+                alt="medication_image"
+              />
+            </div>
+            <p className="my-3 font-bold">Test Medication</p>
+            <div className="flex text-2xl justify-center">
+              <div className="bg-[#089bab] p-1.5 mr-5 text-white rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+                <MdEdit className="text-lg" />
+              </div>
+              <div className="bg-red-500 p-1.5 text-white rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+                <MdDelete className="text-lg" />
+              </div>
+            </div>
+          </div>
+
           {showCards}
         </div>
       </div>
-    </div>
+    </>
   );
 }

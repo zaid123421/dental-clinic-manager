@@ -4,11 +4,11 @@ import Title from "../../components/Title";
 
 export default function Overview(){
   return(
-    <div className="flex bg-[#089bab1c]">
+    <>
       <Sidebar />
-      <div className="px-7 py-5 md:p-5 flex-1">
+      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Overview" />
       </div>
-    </div>
+    </>
   );
 }
