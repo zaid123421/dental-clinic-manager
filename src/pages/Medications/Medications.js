@@ -74,24 +74,6 @@ export default function Medications() {
           />
         </div>
         <div className="content grid md:grid-cols-3 lg:grid-cols-6 gap-3 py-5">
-          <div className="shadow-xl bg-white rounded-xl p-5 flex flex-col justify-between text-center">
-            <div className="bg-blue-300 rounded-md h-[100px] bg-contain">
-              <img
-                className="rounded-md w-full h-full"
-                alt="medication_image"
-              />
-            </div>
-            <p className="my-3 font-bold">Test Medication</p>
-            <div className="flex text-2xl justify-center">
-              <div className="bg-[#089bab] p-1.5 mr-5 text-white rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-                <MdEdit className="text-lg" />
-              </div>
-              <div className="bg-red-500 p-1.5 text-white rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-                <MdDelete className="text-lg" />
-              </div>
-            </div>
-          </div>
-
           {showCards}
         </div>
       </div>
