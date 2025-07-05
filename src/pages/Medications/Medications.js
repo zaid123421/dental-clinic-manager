@@ -63,7 +63,7 @@ export default function Medications() {
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
           <Button
-            className="md:mr-5 min-w-[200px] hidden md:flex"
+            className="md:mr-5 min-w-[225px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication"
