@@ -6,14 +6,27 @@ import Title from "../../components/Title";
 import Sidebar from "../../components/Sidebar";
 import { MdEdit } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BaseUrl, ImageUrl } from "../../config";
 import axios from "axios";
 import PlusButton from "../../components/PlusButton";
 import "../../index.css";
+import deleteConfirm from "../../assets/deleteConfirm.jpg"
 
 export default function Medications() {
   const [cards, setCards] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [addBox, setAddBox] = useState(false);
+  const [count, setCount] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+  const [image, setImage] = useState(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  // useRef
+  const medicationName = useRef();
+  const medicationId = useRef();
+  const inputImageRef = useRef(null);
 
   useEffect(() => {
     axios
@@ -28,14 +41,98 @@ export default function Medications() {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [count]);
+
+  useEffect(() => {
+  if (confirmDelete) {
+    document.body.style.overflow = "hidden"; 
+  } else {
+    document.body.style.overflow = "auto";
+  }
+  return () => {
+    document.body.style.overflow = "auto";  
+  };
+}, [confirmDelete]);
+
+  // Mapping
+  const imageShow = image ? (
+  <img
+    className="w-full h-full rounded-xl"
+    src={URL.createObjectURL(image)}
+    alt="Uploaded"
+  />
+) : null;
+
+  const handleImageClick = () => {
+    if (inputImageRef.current) {
+      inputImageRef.current.click();
+    }
+  };
+
+const handleDrag = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.type === "dragenter" || e.type === "dragover") {
+    setDragActive(true);
+  } else if (e.type === "dragleave") {
+    setDragActive(false);
+  }
+};
+
+const handleDrop = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragActive(false);
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    const file = e.dataTransfer.files[0]; // فقط أول ملف
+    setImage(file);
+    e.dataTransfer.clearData();
+  }
+};
+
+  async function submit() {
+    const formData = new FormData();
+    formData.append("name", name)
+    formData.append("info", description)
+    formData.append("image", image);
+    try {
+      let res = await axios.post( `${BaseUrl}/medication`, formData,
+        {
+          headers: {
+            Accept: "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        });
+        setAddBox(false);
+        setCount((prev) => prev + 1);
+        setName("");
+        setDescription("");
+        setImage(null);
+      } catch (err){
+      console.log("Error !");
+      console.log(err);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await axios.delete( `${BaseUrl}/medication/${medicationId.current}`,
+        {
+          headers: {
+            // Accept: "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        });
+        setConfirmDelete(false);
+        setCount((prev) => prev + 1);
+    } catch {
+      console.log("Error !");
+    }
+  }
 
   const showCards = cards.map((card, index) => (
-    <div
-      key={index}
-      className="shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
-    >
-      <div className="bg-blue-300 rounded-md h-[150px] md:h-[100px] bg-contain">
+    <div key={index} className="shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
+      <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
         <img
           className="rounded-md w-full h-full"
           src={`${ImageUrl}${card.image}`}
@@ -44,11 +141,15 @@ export default function Medications() {
       </div>
       <p className="my-3 font-bold">{card.name}</p>
       <div className="flex text-2xl justify-center">
-        <div className="bg-[#089bab] p-1 md:p-2 mr-5 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-          <MdEdit className="text-sm md:text-lg" />
+        <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdEdit className="text-sm md:text-base" />
         </div>
-        <div className="bg-red-500 p-1 md:p-2 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-          <MdDelete className="text-sm md:text-lg" />
+        <div onClick={() => {
+          medicationName.current = card.name;
+          medicationId.current = card.id;
+          setConfirmDelete(true);
+        }} className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdDelete className="text-sm md:text-base" />
         </div>
       </div>
     </div>
@@ -60,23 +161,99 @@ export default function Medications() {
       <div className="page-content p-5 bg-[#089bab1c] text-sm md:text-lg">
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
-          <Button
-            className="md:mr-5 min-w-[225px] hidden md:flex"
+          <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[225px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication"
           />
-          <PlusButton />
-          <FormInput
-            icon={<IoIosSearch className="text-black text-lg" />}
+          <PlusButton onClick={() => setAddBox(true)} />
+          <FormInput icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
-            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
-          />
+            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"/>
         </div>
         <div className="content grid md:grid-cols-3 lg:grid-cols-6 gap-3 py-5">
           {showCards}
         </div>
       </div>
+
+      {
+        addBox &&
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div className="text-right mb-5 w-full">
+              <h1 className="font-bold text-2xl text-center">أضف دواء</h1>
+              <div className="flex flex-col mb-3">
+                <label className="px-4 mb-2">اسم الدواء</label>
+                <input name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
+                dir="rtl"
+                placeholder="أضف اسم الدواء"
+                className="outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl text-right py-1 px-4" />
+              </div>
+              <div className="flex flex-col">
+                <label className="px-4 mb-2">وصف الدواء</label>
+                <textarea name="description" value={description} onChange={(e) => setDescription(e.target.value)} dir="rtl" placeholder="أضف وصف عن الدواء" className="outline-none border-2 border-transparent focus:border-[#089bab] min-h-[100px] resize-none bg-gray-100 rounded-xl text-right py-1 px-4" />
+              </div>
+            </div>
+
+            <div
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onClick={handleImageClick}
+              onDrop={handleDrop}
+              className="grow relative flex items-center justify-center my-[10px] bg-transparent w-full md:w-[375px] h-[175px] md:h-[225px] border-2 border-dashed border-[#AEAEAE] rounded-[15px] self-center cursor-pointer"
+            >
+
+              <input
+                ref={inputImageRef}
+                hidden
+                type="file"
+                onChange={(e) => setImage(e.target.files[0])}
+              />
+
+              <div className={`${image ? `hidden` : `flex flex-col items-center`}`}>
+                <i className="fa-solid fa-image text-[#7F7F7F] text-[30px] md:text-[60px] mb-[10px]"></i>
+                <p className="text-[12px] md:text-[14px]">
+                  <span className="hidden md:inline-block">
+                    أو اسحبها هنا
+                  </span>{" "}
+                  اختر الصورة {" "}
+                </p>
+              </div>
+              {imageShow}
+            </div>
+
+            <div className="flex justify-center w-full mt-5">
+              <button className="w-[75px] bg-green-500 border-2 border-green-500 p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 mr-7" onClick={() => submit()}>إضافة</button>
+              <button className="w-[75px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
+                setAddBox(false);
+                setImage(null);
+                setName("");
+                setDescription("");
+              }}>تراجع</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      {
+        confirmDelete &&
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[400px]">
+            <img alt="image_delete" src={deleteConfirm} className="w-[200px]"/>
+            <p dir="rtl" className="my-5 text-center md:text-right">
+              هل تريد بالتأكيد حذف  {medicationName.current} ؟
+            </p>
+            <div className="flex justify-center w-full">
+              <button className="w-[75px] bg-[#DD1015] border-2 border-[#DD1015] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 mr-7" onClick={() => handleDelete()}>حذف</button>
+              <button className="w-[75px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => setConfirmDelete(false)}>تراجع</button>
+            </div>
+          </div>
+        </div>
+      }
     </>
   );
 }

@@ -4,6 +4,7 @@ export default function Button({
   iconPosition = "left",
   className = "",
   children,
+  onClick
 }) {
   const baseStyles = "border-[2px] rounded-lg font-semibold duration-[0.3s] px-4 py-[5px]";
   
@@ -14,6 +15,7 @@ export default function Button({
 
   return (
     <button
+      onClick={onClick}
       className={`flex items-center justify-center ${baseStyles} ${variants[variant]} ${className}`}
     >
       {icon && iconPosition === "left" && <span>{icon}</span>}
