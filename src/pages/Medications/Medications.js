@@ -15,6 +15,7 @@ import deleteConfirm from "../../assets/deleteConfirm.jpg"
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import successImage from '../../assets/success.gif';
+import { useNavigate } from "react-router-dom";
 
 export default function Medications() {
   const [cards, setCards] = useState([]);
@@ -34,6 +35,8 @@ export default function Medications() {
   const medicationName = useRef();
   const medicationId = useRef();
   const inputImageRef = useRef(null);
+
+  const nav = useNavigate();
 
   useEffect(() => {
     axios
@@ -163,7 +166,7 @@ export default function Medications() {
   }
 
   const showCards = cards.map((card, index) => (
-    <div key={index} className="shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
+    <div key={index} onClick={() => nav(`/medication-details?medicationId=${card.id}`)} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
         <img
           className="rounded-md w-full h-full"
@@ -176,7 +179,8 @@ export default function Medications() {
         <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
           <MdEdit className="text-sm md:text-base" />
         </div>
-        <div onClick={() => {
+        <div onClick={(e) => {
+          e.stopPropagation();
           medicationName.current = card.name;
           medicationId.current = card.id;
           setConfirmDelete(true);
@@ -190,7 +194,7 @@ export default function Medications() {
   return (
     <>
       <Sidebar />
-      <div className="page-content p-5 bg-[#089bab1c] text-sm md:text-lg">
+      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
           <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[225px] hidden md:flex"
