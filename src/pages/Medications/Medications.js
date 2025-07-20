@@ -23,13 +23,19 @@ export default function Medications() {
   const [addBox, setAddBox] = useState(false);
   const [count, setCount] = useState(0);
   const [dragActive, setDragActive] = useState(false);
-  const [image, setImage] = useState(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isBoxOpen, setIsBoxOpen] = useState(false);
-  const [boxMessage, setBoxMessage] = useState("");
-  const [boxImage, setBoxImage] = useState("");
+  
+  const [modal, setModal] = useState({
+    isOpen: false,
+    message: "",
+    image: "",
+  });
+
+  const [medicationForm, setMedicationForm] = useState({
+  name: "",
+  description: "",
+  image: null,
+});
 
   // useRef
   const medicationName = useRef();
@@ -65,19 +71,19 @@ export default function Medications() {
   }, [confirmDelete]);
 
   useEffect(() => {
-    if (isBoxOpen) {
+    if (modal.isOpen) {
       const timer = setTimeout(() => {
-        setIsBoxOpen(false);
+        setModal((prev) => ({ ...prev, isOpen: false }));
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [isBoxOpen]);
+  }, [modal.isOpen]);
 
   // Mapping
-  const imageShow = image ? (
+  const imageShow = medicationForm.image ? (
   <img
     className="w-full h-full rounded-xl"
-    src={URL.createObjectURL(image)}
+    src={URL.createObjectURL(medicationForm.image)}
     alt="Uploaded"
   />
 ) : null;
@@ -104,7 +110,7 @@ export default function Medications() {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]; // فقط أول ملف
-      setImage(file);
+      medicationForm.image(file);
       e.dataTransfer.clearData();
     }
   };
@@ -112,11 +118,11 @@ export default function Medications() {
   async function submit() {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("name", name)
-    formData.append("info", description)
-    formData.append("image", image);
+    formData.append("name", medicationForm.name);
+    formData.append("info", medicationForm.description);
+    formData.append("image", medicationForm.image);
     try {
-      let res = await axios.post( `${BaseUrl}/medication`, formData,
+      await axios.post( `${BaseUrl}/medication`, formData,
         {
           headers: {
             Accept: "application/json",
@@ -125,19 +131,24 @@ export default function Medications() {
         });
         setAddBox(false);
         setCount((prev) => prev + 1);
-        setName("");
-        setDescription("");
-        setImage(null);
-        setBoxMessage("The Medication Has Been Added Successfully !");
-        setBoxImage(successImage);
+        setMedicationForm({
+          name: "",
+          description: "",
+          image: null,
+        });
+        setModal({
+          isOpen: true,
+          message: "The Medication Has Been Added Successfully !",
+          image: successImage,
+      });
       } catch (err){
-      console.log("Error !");
-      console.log(err);
-      setBoxMessage("Something Went Wrong !");
-      setBoxImage(successImage);
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: successImage,
+      });
     } finally {
       setIsLoading(false);
-      setIsBoxOpen(true);
     }
   }
 
@@ -153,15 +164,19 @@ export default function Medications() {
         });
         setConfirmDelete(false);
         setCount((prev) => prev + 1);
-        setBoxMessage("The Medication Has Been Deleted Successfully !");
-        setBoxImage(successImage);
+        setModal({
+          isOpen: true,
+          message: "The Medication Has Been Deleted Successfully !",
+          image: successImage,
+        });
     } catch {
-      console.log("Error !");
-      setBoxMessage("Something Went Wrong !");
-      setBoxImage(successImage);
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: successImage,
+      });
     } finally {
       setIsLoading(false);
-      setIsBoxOpen(true);
     }
   }
 
@@ -222,8 +237,13 @@ export default function Medications() {
                 <label className="px-4 mb-2">Medication Name</label>
                 <input
                 name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={medicationForm.name}
+                onChange={(e) =>
+                  setMedicationForm((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }))
+                }
                 autoFocus
                 placeholder="Add medication name"
                 className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
@@ -233,8 +253,13 @@ export default function Medications() {
                 <label className="px-4 mb-2">Medication Description</label>
                 <textarea
                 name="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={medicationName.description}
+                onChange={(e) =>
+                setMedicationForm((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
                 placeholder="Descripe the mdeication"
                 className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] min-h-[100px] resize-none bg-gray-100 rounded-xl py-1 px-4" />
               </div>
@@ -251,10 +276,14 @@ export default function Medications() {
                 ref={inputImageRef}
                 hidden
                 type="file"
-                onChange={(e) => setImage(e.target.files[0])}
+                onChange={(e) =>
+                setMedicationForm((prev) => ({
+                  ...prev,
+                  image: e.target.files[0],
+                }))}
               />
 
-              <div className={`${image ? `hidden` : `flex flex-col items-center`}`}>
+              <div className={`${medicationForm.image ? `hidden` : `flex flex-col items-center`}`}>
                 <i className="fa-solid fa-image text-[#7F7F7F] text-[30px] md:text-[60px] mb-[10px]"></i>
                 <p className="text-[12px] md:text-[14px]">
                   Choose An Image {" "}
@@ -268,9 +297,11 @@ export default function Medications() {
             <div className="flex justify-center w-full mt-5">
               <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
                 setAddBox(false);
-                setImage(null);
-                setName("");
-                setDescription("");
+                setMedicationForm({
+                name: "",
+                description: "",
+                image: null,
+              });
               }}>Cancel</button>
               <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => submit()}>Add</button>
             </div>
@@ -296,7 +327,7 @@ export default function Medications() {
 
       {isLoading && <Loading />}
 
-      {isBoxOpen && <Modal message={boxMessage} imageSrc={boxImage}/>}
+      {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image}/>}
 
     </>
   );
