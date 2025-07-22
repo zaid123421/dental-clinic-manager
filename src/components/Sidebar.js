@@ -27,7 +27,7 @@ export default function Sidebar() {
         <Link to="/overview" label="Overview" responsive={responsive} icon= {<MdDashboard className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
         <Link to="/medications" label="Medications" responsive={responsive} icon= {<RiMedicineBottleFill className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
         <Link to="/" label="Medications Plans" responsive={responsive} icon= {<FaBookMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
-        <Link to="/" label="Treatment Notes" responsive={responsive} icon= {<FaNotesMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
+        <Link to="/treatments-notes" label="Treatment Notes" responsive={responsive} icon= {<FaNotesMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
         <Link to="/" label="Logout" responsive={responsive} icon= {<RiLogoutBoxRLine className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
       </ul>
       <div className="hover:text-[#089bab] hover:bg-white p-2 duration-[0.3s] rounded-md cursor-pointer absolute bottom-[15px] flex items-center">

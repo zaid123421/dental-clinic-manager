@@ -11,18 +11,17 @@ import Title from "../../components/Title";
 // import icons
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
-import { MdEdit } from "react-icons/md";
-import { MdDelete } from "react-icons/md";
+import { MdEdit, MdDelete } from "react-icons/md";
 // import backend configuration
 import { BaseUrl, ImageUrl } from "../../config";
 // import axios
 import axios from "axios";
 // import images
-import deleteConfirm from "../../assets/deleteConfirm.jpg"
 import successImage from '../../assets/success.gif';
 import { useNavigate } from "react-router-dom";
 // import style file
 import "../../index.css";
+import ConfirmDelete from "../../components/ConfirmDelete";
 
 export default function Medications() {
   // States
@@ -34,7 +33,7 @@ export default function Medications() {
   const [dragActive, setDragActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [id, setId] = useState(null);
-  
+
   const [modal, setModal] = useState({
     isOpen: false,
     message: "",
@@ -54,7 +53,6 @@ export default function Medications() {
   });
 
   // useRef
-  const medicationName = useRef();
   const medicationId = useRef();
   const inputImageRef = useRef(null);
 
@@ -78,7 +76,7 @@ export default function Medications() {
   }, [count]);
 
   useEffect(() => {
-  if (confirmDelete) {
+  if (confirmDelete || addBox) {
     document.body.style.overflow = "hidden"; 
   } else {
     document.body.style.overflow = "auto";
@@ -86,7 +84,7 @@ export default function Medications() {
   return () => {
     document.body.style.overflow = "auto";  
   };
-  }, [confirmDelete]);
+  }, [confirmDelete, addBox]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -134,7 +132,10 @@ export default function Medications() {
         </div>
         <div onClick={(e) => {
           e.stopPropagation();
-          medicationName.current = card.name;
+          setMedicationForm((prev) => ({
+            ...prev,
+            name: card.name
+          }))
           medicationId.current = card.id;
           setConfirmDelete(true);
         }} className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
@@ -311,7 +312,7 @@ export default function Medications() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Medication</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Medication Name</label>
+                <label className="px-4 mb-2">Name</label>
                 <input
                 name="name"
                 value={medicationForm.name}
@@ -327,7 +328,7 @@ export default function Medications() {
                 />
               </div>
               <div className="flex flex-col font-semibold">
-                <label className="px-4 mb-2">Medication Description</label>
+                <label className="px-4 mb-2">Description</label>
                 <textarea
                 name="description"
                 value={medicationForm.description}
@@ -383,22 +384,6 @@ export default function Medications() {
               });
               }}>Cancel</button>
               <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => submit()}>Add</button>
-            </div>
-          </div>
-        </div>
-      }
-
-      {
-        confirmDelete &&
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
-          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[400px]">
-            <img alt="image_delete" src={deleteConfirm} className="w-[200px]"/>
-            <p className="my-5 text-center">
-              Do You Really Want To Delete {medicationName.current} ?
-            </p>
-            <div className="flex justify-center w-full">
-              <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => setConfirmDelete(false)}>Cancel</button>
-              <button className="w-[85px] bg-[#DD1015] border-2 border-[#DD1015] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => handleDelete()}>Delete</button>
             </div>
           </div>
         </div>
@@ -487,6 +472,14 @@ export default function Medications() {
           </div>
         </div>
       }
+
+      {confirmDelete && <ConfirmDelete onClick1={() => {
+        setConfirmDelete(false);
+        setMedicationForm((prev) => ({
+          ...prev,
+          name: "",
+        }))
+      }} onClick2={() => handleDelete()} name={medicationForm.name} />}
 
       {isLoading && <Loading />}
 

@@ -15,6 +15,6 @@ export default function Model({ message, imageSrc }) {
         <img src={imageSrc} alt="Modal Icon" className="w-[500px]" />
         <p className="text-center text-[14px] md:text-[20px] font-bold">{message}</p>
       </div>
-  </div>
+    </div>
   );
 }
