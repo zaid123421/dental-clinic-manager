@@ -29,6 +29,7 @@ export default function Medications() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
+  const [showBox, setShowBox] = useState(false);
   const [count, setCount] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,23 +42,20 @@ export default function Medications() {
   });
 
   const [medicationForm, setMedicationForm] = useState({
-  name: "",
-  description: "",
-  image: null,
+    name: "",
+    description: "",
+    image: null,
   });
 
   const [oldMedicationForm, setOldMedicationForm] = useState({
-  name: "",
-  description: "",
-  image: null,
+    name: "",
+    description: "",
+    image: null,
   });
 
   // useRef
   const medicationId = useRef();
   const inputImageRef = useRef(null);
-
-  // useNavigate
-  const nav = useNavigate();
 
   // useEffect
   useEffect(() => {
@@ -76,7 +74,7 @@ export default function Medications() {
   }, [count]);
 
   useEffect(() => {
-  if (confirmDelete || addBox) {
+  if (confirmDelete || addBox || editBox) {
     document.body.style.overflow = "hidden"; 
   } else {
     document.body.style.overflow = "auto";
@@ -84,7 +82,7 @@ export default function Medications() {
   return () => {
     document.body.style.overflow = "auto";  
   };
-  }, [confirmDelete, addBox]);
+  }, [confirmDelete, addBox, editBox]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -103,7 +101,14 @@ export default function Medications() {
   : null;
 
   const showCards = cards.map((card, index) => (
-    <div key={index} onClick={() => nav(`/medication-details?medicationId=${card.id}`)} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
+    <div key={index} onClick={() => {
+      setShowBox(true);
+      setMedicationForm({
+        name: card.name,
+        description: card.info,
+        image: `${ImageUrl}${card.image}`
+      })
+    }} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
         <img
           className="rounded-md w-full h-full"
@@ -203,6 +208,7 @@ export default function Medications() {
           image: successImage,
       });
       } catch (err){
+        console.log(err);
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
@@ -266,6 +272,11 @@ export default function Medications() {
             // Authorization: `Bearer ${token}`,
           },
         });
+          setMedicationForm(() => ({
+            name: "",
+            description: "",
+            image: null,
+          }))
         setConfirmDelete(false);
         setCount((prev) => prev + 1);
         setModal({
@@ -468,6 +479,37 @@ export default function Medications() {
               });
               }} className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300">Cancel</button>
               <button onClick={() => edit()} className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">Edit</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      {
+        showBox &&
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="relative bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+          <div
+          onClick={() => {
+            setShowBox(false);
+            setMedicationForm({
+              name: "",
+              description: "",
+              image: null
+            });
+          }} className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300">X</div>
+            <div className=" mb-5 w-full font-semibold">
+              <h1 className="font-bold text-2xl text-center">Medication Details</h1>
+              <div className="my-3 object-cover w-full flex justify-center">
+                <img className="w-[150px] h-[150px]" alt="medication-plan-image" src={medicationForm.image} />
+              </div>
+              <div className="flex justify-between my-3">
+                <label>Name</label>
+                <label className="text-[#089bab]">{medicationForm.name}</label>
+              </div>
+              <div className="flex flex-col">
+                <label>Description</label>
+                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">{medicationForm.description}</div>
+              </div>
             </div>
           </div>
         </div>

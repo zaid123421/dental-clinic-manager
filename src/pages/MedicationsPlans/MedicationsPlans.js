@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import Sidebar from "../../components/Sidebar";
-import Title from "../../components/Title";
-import axios from "axios";
-import { BaseUrl } from "../../config";
-import PlusButton from "../../components/PlusButton";
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
+import PlusButton from "../../components/PlusButton";
+import Sidebar from "../../components/Sidebar";
+import Title from "../../components/Title";
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
 import { MdEdit, MdDelete } from "react-icons/md";
@@ -13,18 +11,19 @@ import successImage from '../../assets/success.gif';
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import ConfirmDelete from "../../components/ConfirmDelete";
+import axios from "axios";
+import { BaseUrl, ImageUrl } from "../../config";
 
-
-export default function Treatments() {
+export default function MedicationsPlans() {
   // States
   const [cards, setCards] = useState([]);
+  const [medications, setMedications] = useState([]);
   const [count, setCount] = useState(0);
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [id, setId] = useState(null);
 
   const [modal, setModal] = useState({
     isOpen: false,
@@ -32,38 +31,59 @@ export default function Treatments() {
     image: "",
   });
 
-  const [treatmentNote, setTreatmentNote] = useState({
+  const [medicationPlan, setMedicationPlan] = useState({
+    id: null,
+    medicationId: null,
     name: "",
-    description: "",
+    dose: "",
     duration_value: 1,
-    duration_unit: ""
+    duration_unit: "days",
+    info: "",
+    image: null,
   });
 
-  const [oldTreatmentNote, setOldTreatmentNote] = useState({
+  const [oldMedicationPlan, setOldMedicationPlan] = useState({
+    id: null,
+    medicationId: null,
     name: "",
-    description: "",
+    dose: "",
     duration_value: 1,
-    duration_unit: ""
+    duration_unit: "days",
   });
 
   // useRef
-  const treatmentNoteId = useRef(null);
+  const medicationPlanId = useRef(null);
 
-  // useEffect
   useEffect(() => {
     axios
-      .get(`${BaseUrl}/treatment-note`, {
+      .get(`${BaseUrl}/medication-plan`, {
         headers: {
           Accept: "application/json",
         },
       })
       .then((data) => {
+        console.log(data.data.data)
         setCards(data.data.data);
       })
       .catch((error) => {
         console.log(error);
       });
   }, [count]);
+
+  useEffect(() => {
+    axios
+      .get(`${BaseUrl}/medication`, {
+        headers: {
+          Accept: "application/json",
+        },
+      })
+      .then((data) => {
+        setMedications(data.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   useEffect(() => {
   if (confirmDelete || addBox || editBox || showBox) {
@@ -85,93 +105,28 @@ export default function Treatments() {
     }
   }, [modal.isOpen]);
 
-  // Mapping
-  const showCards = cards.map((card, index) => (
-    <div key={index} onClick={() => {
-      setTreatmentNote({
-        name: card.title,
-        description: card.text,
-        duration_value: card.duration_value,
-        duration_unit: card.duration_unit,
-      })
-      setShowBox(true);
-    }} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
-      <div>
-        <div className="flex justify-between items-center">
-          <p className="font-bold mr-2">Name:</p>
-          <span className="font-semibold">{card.title}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <p className="font-bold flex justify-between my-3 mr-2">Duration: </p>
-          <span className="font-semibold">{card.duration_value} {card.duration_unit}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <p className="font-bold flex justify-between mr-2">Description:</p>
-          <span className="font-semibold truncate w-[50px] sm:w-full text-right">{card.text}</span>
-        </div>
-      </div>
-      <div className="flex text-2xl justify-center mt-5">
-        <div onClick={(e) => {
-          e.stopPropagation();
-          setTreatmentNote({
-            name: card.title,
-            description: card.text,
-            duration_value: card.duration_value,
-            duration_unit: card.duration_unit,
-          })
-          setOldTreatmentNote({
-            name: card.title,
-            description: card.text,
-            duration_value: card.duration_value,
-            duration_unit: card.duration_unit,
-          })
-          setId(card.id)
-          setEditBox(true);
-        }} className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-          <MdEdit className="text-sm md:text-base" />
-        </div>
-        <div onClick={(e) => {
-          e.stopPropagation();
-          treatmentNoteId.current = card.id;
-          setConfirmDelete(true);
-          setTreatmentNote((prev) => ({
-            ...prev,
-            name: card.title
-          }))
-        }} className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
-          <MdDelete className="text-sm md:text-base" />
-        </div>
-      </div>
-    </div>
+  const showOptions = medications.map((medication, index) => (
+    <option index={index} value={medication.id}>{medication.name}</option>
   ));
 
-  // Functions
   async function handleDelete() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/treatment-note/${treatmentNoteId.current}`,
+      await axios.delete(`${BaseUrl}/medication-plan/${medicationPlan.id}`,
         {
           headers: {
             // Accept: "application/json",
             // Authorization: `Bearer ${token}`,
           },
         });
-        setTreatmentNote((prev) => ({
-          ...prev,
-          name: ""
-        }))
         setConfirmDelete(false);
         setCount((prev) => prev + 1);
         setModal({
           isOpen: true,
-          message: "The Treatment Note Has Been Deleted Successfully !",
+          message: "The Medication Plan Has Been Deleted Successfully !",
           image: successImage,
         });
     } catch {
-      setTreatmentNote((prev) => ({
-        ...prev,
-        name: ""
-      }))
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
@@ -185,12 +140,12 @@ export default function Treatments() {
   async function Submit() {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("title", treatmentNote.name);
-    formData.append("text", treatmentNote.description);
-    formData.append("duration_value", treatmentNote.duration_value);
-    formData.append("duration_unit", treatmentNote.duration_unit);
+    formData.append("medication_id", medicationPlan.medicationId);
+    formData.append("dose", medicationPlan.dose);
+    formData.append("duration_value", medicationPlan.duration_value);
+    formData.append("duration_unit", medicationPlan.duration_unit);
     try {
-      await axios.post( `${BaseUrl}/treatment-note`, formData,
+      await axios.post(`${BaseUrl}/medication-plan`, formData,
         {
           headers: {
             Accept: "application/json",
@@ -199,15 +154,17 @@ export default function Treatments() {
         });
         setAddBox(false);
         setCount((prev) => prev + 1);
-        setTreatmentNote({
+        setMedicationPlan({
+          id: null,
+          medicationId: null,
           name: "",
-          description: "",
+          dose: "",
           duration_value: 1,
-          duration_unit: ""
+          duration_unit: "days",
         });
         setModal({
           isOpen: true,
-          message: "The Tretment Note Has Been Added Successfully !",
+          message: "The Medication Plan Has Been Added Successfully !",
           image: successImage,
       });
       } catch (err){
@@ -225,15 +182,13 @@ export default function Treatments() {
   async function Edit() {
     setIsLoading(true);
     const formData = new FormData();
-    if(treatmentNote.name !== oldTreatmentNote.name) {
-    formData.append("title", treatmentNote.name);
-    }
-    formData.append("text", treatmentNote.description);
-    formData.append("duration_value", treatmentNote.duration_value);
-    formData.append("duration_unit", treatmentNote.duration_unit);
+    formData.append("medication_id", medicationPlan.medicationId);
+    formData.append("dose", medicationPlan.dose);
+    formData.append("duration_value", medicationPlan.duration_value);
+    formData.append("duration_unit", medicationPlan.duration_unit);
     formData.append("_method", "patch");
     try {
-      await axios.post(`${BaseUrl}/treatment-note/${id}`, formData,
+      await axios.post(`${BaseUrl}/medication-plan/${medicationPlan.id}`, formData,
         {
           headers: {
             Accept: "application/json",
@@ -242,15 +197,17 @@ export default function Treatments() {
         });
         setEditBox(false);
         setCount((prev) => prev + 1);
-        setTreatmentNote({
+        setMedicationPlan({
+          id: null,
+          medicationId: null,
           name: "",
-          description: "",
+          dose: "",
           duration_value: 1,
-          duration_unit: ""
+          duration_unit: "days",
         });
         setModal({
           isOpen: true,
-          message: "The Treatment Note Has Been Edited Successfully !",
+          message: "The Medication Plan Has Been Added Successfully !",
           image: successImage,
       });
       } catch (err){
@@ -265,14 +222,88 @@ export default function Treatments() {
     }
   }
 
-  const increment = () => setTreatmentNote((prev) => ({
+  // Mapping
+  const showCards = cards.map((card, index) => (
+    <div key={index} onClick={() => {
+      setShowBox(true);
+      setMedicationPlan({
+        name: card.medication.name,
+        dose: card.dose,
+        duration_value: card.duration_value,
+        duration_unit: card.duration_unit,
+        info: card.medication.info,
+        image: `${ImageUrl}${card.medication.image}`
+      });
+      console.log(medicationPlan)
+      }} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
+      <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
+        <img
+          className="rounded-md w-full h-full"
+          src={`${ImageUrl}${card.medication.image}`}
+          alt="medication_image"
+        />
+      </div>
+      <div className="my-3 font-semibold">
+        <div className="flex justify-between">
+          <label className="font-bold mr-2">Name:</label>
+          <label>{card.medication.name}</label>
+        </div>
+        <div className="flex justify-between my-2">
+          <label className="font-bold mr-2">Dose:</label>
+          <label className="text-right">{card.dose}</label>
+        </div>
+        <div className="flex justify-between">
+          <label className="font-bold mr-2">Duration:</label>
+          <label>{card.duration_value} {card.duration_unit}</label>
+        </div>
+      </div>
+      <div className="flex text-2xl justify-center">
+        <div onClick={(e) => {
+          setEditBox(true);
+          e.stopPropagation();
+          setMedicationPlan({
+            id: card.id,
+            medicationId: card.medication.id,
+            name: card.medication.name,
+            dose: card.dose,
+            duration_value: card.duration_value,
+            duration_unit: card.duration_unit
+          });
+          setOldMedicationPlan({
+            id: card.id,
+            medicationId: card.medication.id,
+            name: card.medication.name,
+            dose: card.medication.dose,
+            duration_value: card.duration_value,
+            duration_unit: card.duration_unit
+          });
+        }} className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdEdit className="text-sm md:text-base" />
+        </div>
+        <div onClick={(e) => {
+          e.stopPropagation();
+          medicationPlanId.current = card.id;
+          setConfirmDelete(true);
+          setMedicationPlan((prev) => ({
+            ...prev,
+            id: card.id,
+            name: card.medication.name
+          }))
+        }} className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <MdDelete className="text-sm md:text-base" />
+        </div>
+      </div>
+    </div>
+  ));
+
+  const increment = () => setMedicationPlan((prev) => ({
     ...prev,
-    duration_value: treatmentNote.duration_value + 1
+    duration_value: medicationPlan.duration_value + 1
   }));
 
-  const decrement = () => setTreatmentNote((prev) => ({
+  const decrement = () => setMedicationPlan((prev) => ({
     ...prev,
-    duration_value: treatmentNote.duration_value > 1 ? treatmentNote.duration_value - 1 : treatmentNote.duration_value
+    duration_value: medicationPlan.duration_value > 1 ? medicationPlan.duration_value - 1 : medicationPlan.duration_value
   }));
 
   return(
@@ -280,19 +311,19 @@ export default function Treatments() {
       <Sidebar />
 
       <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
-        <Title label="Treatments Notes" />
+        <Title label="Medications Plans" />
         <div className="mt-3 flex items-center">
           <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[250px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
-            children="Add Treatment Note"
+            children="Add Medication Plan"
           />
           <PlusButton onClick={() => setAddBox(true)} />
           <FormInput icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
             className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"/>
         </div>
-        <div className="content grid md:grid-cols-3 lg:grid-cols-4 gap-3 py-5">
+        <div className="content grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 py-5">
           {showCards}
         </div>
       </div>
@@ -303,35 +334,35 @@ export default function Treatments() {
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Treatment Note</h1>
-              <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
-                <input
-                name="name"
-                value={treatmentNote.name}
-                onChange={(e) =>
-                  setTreatmentNote((prev) => ({
+              <div className="flex flex items-center my-3 font-semibold">
+                <label className="px-4 mb-2">Medication Name</label>
+                  <select
+                  value={medicationPlan.medicationId}
+                  onChange={(e) => setMedicationPlan((prev) => ({
                     ...prev,
-                    name: e.target.value,
+                    medicationId: e.target.value
+                  }))}
+                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                >
+                  <option>None</option>
+                  {showOptions}
+                </select>
+              </div>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="px-4 mb-2">Dose</label>
+                <input
+                name="Medication Name"
+                value={medicationPlan.dose}
+                onChange={(e) =>
+                  setMedicationPlan((prev) => ({
+                    ...prev,
+                    dose: e.target.value,
                   }))
                 }
                 autoFocus
-                placeholder="Add treatment note name"
+                placeholder="Add medication plan dose"
                 className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
-              </div>
-              <div className="flex flex-col font-semibold">
-                <label className="px-4 mb-2">Description</label>
-                <textarea
-                name="description"
-                value={treatmentNote.description}
-                onChange={(e) =>
-                setTreatmentNote((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-                placeholder="Descripe the treatment note"
-                className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] min-h-[100px] resize-none bg-gray-100 rounded-xl py-1 px-4" />
               </div>
               <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
@@ -339,8 +370,8 @@ export default function Treatments() {
                     <button onClick={decrement} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">−</button>
                     <input
                       type="number"
-                      value={treatmentNote.duration_value}
-                      onChange={(e) => setTreatmentNote((prev) => ({
+                      value={medicationPlan.duration_value}
+                      onChange={(e) => setMedicationPlan((prev) => ({
                         ...prev,
                         duration_value: e.target.value
                       }))}
@@ -349,8 +380,8 @@ export default function Treatments() {
                     <button onClick={increment} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">+</button>
                   </div>
                     <select
-                    value={treatmentNote.duration_unit}
-                    onChange={(e) => setTreatmentNote((prev) => ({
+                    value={medicationPlan.duration_unit}
+                    onChange={(e) => setMedicationPlan((prev) => ({
                       ...prev,
                       duration_unit: e.target.value
                     }))}
@@ -367,17 +398,19 @@ export default function Treatments() {
               <button
               onClick={() => {
                 setAddBox(false);
-                setTreatmentNote({
+                setMedicationPlan({
+                  id: null,
+                  medicationId: null,
                   name: "",
-                  description: "",
+                  dose: "",
                   duration_value: 1,
-                  duration_unit: "",
+                  duration_unit: "days",
               });
               }}
               className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
               >Cancel</button>
               <button
-              onClick={Submit}
+              onClick={() => Submit()}
               className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">
               Add</button>
             </div>
@@ -390,36 +423,36 @@ export default function Treatments() {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
             <div className=" mb-5 w-full">
-              <h1 className="font-bold text-2xl text-center">Edit Treatment Note</h1>
-              <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
-                <input
-                name="name"
-                value={treatmentNote.name}
-                onChange={(e) =>
-                  setTreatmentNote((prev) => ({
+              <h1 className="font-bold text-2xl text-center">Add Treatment Note</h1>
+              <div className="flex flex items-center my-3 font-semibold">
+                <label className="px-4 mb-2">Medication Name</label>
+                  <select
+                  value={medicationPlan.medicationId}
+                  onChange={(e) => setMedicationPlan((prev) => ({
                     ...prev,
-                    name: e.target.value,
+                    medicationId: e.target.value
+                  }))}
+                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                >
+                  <option>None</option>
+                  {showOptions}
+                </select>
+              </div>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="px-4 mb-2">Dose</label>
+                <input
+                name="Medication Name"
+                value={medicationPlan.dose}
+                onChange={(e) =>
+                  setMedicationPlan((prev) => ({
+                    ...prev,
+                    dose: e.target.value,
                   }))
                 }
                 autoFocus
-                placeholder="Add treatment note name"
+                placeholder="Add medication plan dose"
                 className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
-              </div>
-              <div className="flex flex-col font-semibold">
-                <label className="px-4 mb-2">Description</label>
-                <textarea
-                name="description"
-                value={treatmentNote.description}
-                onChange={(e) =>
-                setTreatmentNote((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-                placeholder="Descripe the treatment note"
-                className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] min-h-[100px] resize-none bg-gray-100 rounded-xl py-1 px-4" />
               </div>
               <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
@@ -427,8 +460,8 @@ export default function Treatments() {
                     <button onClick={decrement} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">−</button>
                     <input
                       type="number"
-                      value={treatmentNote.duration_value}
-                      onChange={(e) => setTreatmentNote((prev) => ({
+                      value={medicationPlan.duration_value}
+                      onChange={(e) => setMedicationPlan((prev) => ({
                         ...prev,
                         duration_value: e.target.value
                       }))}
@@ -437,8 +470,8 @@ export default function Treatments() {
                     <button onClick={increment} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">+</button>
                   </div>
                     <select
-                    value={treatmentNote.duration_unit}
-                    onChange={(e) => setTreatmentNote((prev) => ({
+                    value={medicationPlan.duration_unit}
+                    onChange={(e) => setMedicationPlan((prev) => ({
                       ...prev,
                       duration_unit: e.target.value
                     }))}
@@ -455,17 +488,19 @@ export default function Treatments() {
               <button
               onClick={() => {
                 setEditBox(false);
-                setTreatmentNote({
+                setMedicationPlan({
+                  id: null,
+                  medicationId: null,
                   name: "",
-                  description: "",
+                  dose: "",
                   duration_value: 1,
-                  duration_unit: "",
+                  duration_unit: "days",
               });
               }}
               className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
               >Cancel</button>
               <button
-              onClick={Edit}
+              onClick={() => Edit()}
               className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">
               Edit</button>
             </div>
@@ -480,29 +515,37 @@ export default function Treatments() {
           <div
           onClick={() => {
             setShowBox(false);
-            setTreatmentNote({
+            setMedicationPlan({
               name: "",
-              description: "",
+              dose: "",
               duration_value: 1,
-              duration_unit: "",
+              duration_unit: "days",
+              info: "",
             });
           }} className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300">X</div>
             <div className=" mb-5 w-full font-semibold">
-              <h1 className="font-bold text-2xl text-center">{treatmentNote.name} Details</h1>
+              <h1 className="font-bold text-2xl text-center">Medication Plan Details</h1>
+              <div className="my-3 object-cover w-full flex justify-center">
+                <img className="w-[150px] h-[150px]" alt="medication-plan-image" src={medicationPlan.image} />
+              </div>
               <div className="flex justify-between my-3">
                 <label>Name</label>
-                <label className="text-[#089bab]">{treatmentNote.name}</label>
+                <label className="text-[#089bab] ml-2">{medicationPlan.name}</label>
               </div>
               <div className="flex flex-col">
                 <label>Description</label>
-                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">{treatmentNote.description}</div>
+                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">{medicationPlan.info}</div>
               </div>
-              <div className="flex mt-3 justify-between">
+              <div className="flex justify-between mt-3">
                 <label>Duration</label>
-                <div className="text-[#089bab]">
-                  <label className="mr-2">{treatmentNote.duration_value}</label>
-                  <label>{treatmentNote.duration_unit}</label>
+                <div className="text-[#089bab] ml-2">
+                  <label className="mr-2">{medicationPlan.duration_value}</label>
+                  <label>{medicationPlan.duration_unit}</label>
                 </div>
+              </div>
+              <div className="flex justify-between mt-3">
+                <label>Dose</label>
+                <label className="text-[#089bab] ml-2">{medicationPlan.dose}</label>
               </div>
             </div>
           </div>
@@ -510,10 +553,11 @@ export default function Treatments() {
       }
 
       {confirmDelete &&
-      <ConfirmDelete name={treatmentNote.name}
+      <ConfirmDelete
+      name={medicationPlan.name}
       onClick1={() => {
         setConfirmDelete(false);
-        setTreatmentNote((prev) => ({
+        setMedicationPlan((prev) => ({
         ...prev,
         name: ""
       }))}}
