@@ -1,3 +1,4 @@
+// import icons
 import { FiPlus } from "react-icons/fi";
 
 export default function PlusButton ({ className, onClick }) {

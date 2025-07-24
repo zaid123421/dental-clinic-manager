@@ -1,5 +1,3 @@
-//import hooks
-import { useEffect, useRef, useState } from "react";
 // import components
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
@@ -12,16 +10,18 @@ import Title from "../../components/Title";
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
 import { MdEdit, MdDelete } from "react-icons/md";
+// import images
+import successImage from '../../assets/success.gif';
+import error from '../../assets/error.gif';
+// import style file
+import "../../index.css";
+import ConfirmDelete from "../../components/ConfirmDelete";
+//import hooks
+import { useEffect, useRef, useState } from "react";
 // import backend configuration
 import { BaseUrl, ImageUrl } from "../../config";
 // import axios
 import axios from "axios";
-// import images
-import successImage from '../../assets/success.gif';
-import { useNavigate } from "react-router-dom";
-// import style file
-import "../../index.css";
-import ConfirmDelete from "../../components/ConfirmDelete";
 
 export default function Medications() {
   // States
@@ -209,11 +209,11 @@ export default function Medications() {
       });
       } catch (err){
         console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: successImage,
-      });
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
     } finally {
       setIsLoading(false);
     }
@@ -255,7 +255,7 @@ export default function Medications() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -285,10 +285,11 @@ export default function Medications() {
           image: successImage,
         });
     } catch {
+      setConfirmDelete(false);
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -301,7 +302,7 @@ export default function Medications() {
       <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Medications" />
         <div className="mt-3 flex items-center">
-          <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[225px] hidden md:flex"
+          <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[250px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication"

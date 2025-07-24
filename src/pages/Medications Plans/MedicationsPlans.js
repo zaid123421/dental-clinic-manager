@@ -1,17 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+// import components
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
 import PlusButton from "../../components/PlusButton";
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
-import { IoIosSearch } from "react-icons/io";
-import { FiPlus } from "react-icons/fi";
-import { MdEdit, MdDelete } from "react-icons/md";
-import successImage from '../../assets/success.gif';
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import ConfirmDelete from "../../components/ConfirmDelete";
+// import icons
+import { IoIosSearch } from "react-icons/io";
+import { FiPlus } from "react-icons/fi";
+import { MdEdit, MdDelete } from "react-icons/md";
+// import hooks
+import { useEffect, useRef, useState } from "react";
+// import images
+import successImage from '../../assets/success.gif';
+// import axios library
 import axios from "axios";
+// import backend server configurations
 import { BaseUrl, ImageUrl } from "../../config";
 
 export default function MedicationsPlans() {

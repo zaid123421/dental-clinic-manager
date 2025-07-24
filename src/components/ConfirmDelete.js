@@ -1,3 +1,4 @@
+// import images
 import deleteConfirm from "../assets/deleteConfirm.jpg"
 
 export default function ConfirmDelete({ name, onClick1, onClick2 }) {

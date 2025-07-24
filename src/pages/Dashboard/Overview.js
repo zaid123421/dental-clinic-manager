@@ -1,6 +1,6 @@
+// import components
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
-
 
 export default function Overview(){
   return(

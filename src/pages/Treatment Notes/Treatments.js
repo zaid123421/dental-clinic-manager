@@ -1,19 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+// import components
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
-import axios from "axios";
-import { BaseUrl } from "../../config";
 import PlusButton from "../../components/PlusButton";
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
-import { IoIosSearch } from "react-icons/io";
-import { FiPlus } from "react-icons/fi";
-import { MdEdit, MdDelete } from "react-icons/md";
-import successImage from '../../assets/success.gif';
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import ConfirmDelete from "../../components/ConfirmDelete";
-
+import { useEffect, useRef, useState } from "react";
+// import icons
+import { IoIosSearch } from "react-icons/io";
+import { FiPlus } from "react-icons/fi";
+import { MdEdit, MdDelete } from "react-icons/md";
+// import axios library
+import axios from "axios";
+// import backend server configurations
+import { BaseUrl } from "../../config";
+// import images
+import successImage from '../../assets/success.gif';
 
 export default function Treatments() {
   // States
@@ -25,20 +29,17 @@ export default function Treatments() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [id, setId] = useState(null);
-
   const [modal, setModal] = useState({
     isOpen: false,
     message: "",
     image: "",
   });
-
   const [treatmentNote, setTreatmentNote] = useState({
     name: "",
     description: "",
     duration_value: 1,
     duration_unit: ""
   });
-
   const [oldTreatmentNote, setOldTreatmentNote] = useState({
     name: "",
     description: "",
