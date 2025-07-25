@@ -48,15 +48,6 @@ export default function MedicationsPlans() {
     image: null,
   });
 
-  const [oldMedicationPlan, setOldMedicationPlan] = useState({
-    id: null,
-    medicationId: null,
-    name: "",
-    dose: "",
-    duration_value: 1,
-    duration_unit: "days",
-  });
-
   // useRef
   const medicationPlanId = useRef(null);
 
@@ -239,7 +230,6 @@ export default function MedicationsPlans() {
         info: card.medication.info,
         image: `${ImageUrl}${card.medication.image}`
       });
-      console.log(medicationPlan)
       }} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
         <img
@@ -271,14 +261,6 @@ export default function MedicationsPlans() {
             medicationId: card.medication.id,
             name: card.medication.name,
             dose: card.dose,
-            duration_value: card.duration_value,
-            duration_unit: card.duration_unit
-          });
-          setOldMedicationPlan({
-            id: card.id,
-            medicationId: card.medication.id,
-            name: card.medication.name,
-            dose: card.medication.dose,
             duration_value: card.duration_value,
             duration_unit: card.duration_unit
           });
@@ -342,16 +324,16 @@ export default function MedicationsPlans() {
               <div className="flex flex items-center my-3 font-semibold">
                 <label className="px-4 mb-2">Medication Name</label>
                   <select
-                  value={medicationPlan.medicationId}
-                  onChange={(e) => setMedicationPlan((prev) => ({
-                    ...prev,
-                    medicationId: e.target.value
-                  }))}
-                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
-                >
-                  <option>None</option>
-                  {showOptions}
-                </select>
+                    value={medicationPlan.medicationId}
+                    onChange={(e) => setMedicationPlan((prev) => ({
+                      ...prev,
+                      medicationId: e.target.value
+                    }))}
+                    className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  >
+                    <option>None</option>
+                    {showOptions}
+                  </select>
               </div>
               <div className="flex flex-col my-3 font-semibold">
                 <label className="px-4 mb-2">Dose</label>
