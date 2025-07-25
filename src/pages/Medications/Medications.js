@@ -517,12 +517,13 @@ export default function Medications() {
       }
 
       {confirmDelete && <ConfirmDelete onClick1={() => {
-        setConfirmDelete(false);
-        setMedicationForm((prev) => ({
-          ...prev,
-          name: "",
-        }))
-      }} onClick2={() => handleDelete()} name={medicationForm.name} />}
+      setConfirmDelete(false);
+      setMedicationForm((prev) => ({
+        ...prev,
+        name: "",
+      }))}}
+      onClick2={() => handleDelete()} name={medicationForm.name}
+      medication={true}/>}
 
       {isLoading && <Loading />}
 

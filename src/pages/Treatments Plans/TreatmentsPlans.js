@@ -25,6 +25,7 @@ export default function TreatmentsPlans() {
   const [addCategoryBox, setAddCategoryBox] = useState(false);
   const [editCategoryBox, setEditCategoryBox] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [plans, setPlans] = useState([]);
   const [selectedType, setSelectedType] = useState("All");
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +54,23 @@ export default function TreatmentsPlans() {
       })
       .then((data) => {
         setCategories(data.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [refreshFlag]);
+
+  // useEffect
+  useEffect(() => {
+    axios
+      .get(`${BaseUrl}/treatment-plan`, {
+        headers: {
+          Accept: "application/json",
+        },
+      })
+      .then((data) => {
+        console.log(data.data.data);
+        setPlans(data.data.data);
       })
       .catch((error) => {
         console.log(error);
@@ -101,11 +119,26 @@ export default function TreatmentsPlans() {
     </button>
   ));
 
-  // const plans =
-  // categories.filter((category) => category.name === selectedType)
-  // .map((category, index) => (
-  //   <button className="bg-[#089bab] rounded-full py-2 px-3 text-white font-semibold" key={index}>{category.name}</button>
-  // ));
+  const filteredPlans = selectedType === "All"
+    ? plans
+    : plans.filter(plan => plan.category?.name === selectedType);
+
+  const showPlans = filteredPlans.map((plan, index) => (
+    <div key={index} className="bg-white shadow-md p-3 rounded-xl text-lg font-semibold">
+        <p className=" flex justify-between"><span>Name:</span> {plan.name}</p>
+        <p className="flex justify-between"><span>Category:</span> {plan.category.name}</p>
+        <p className="flex justify-between"><span>Cost:</span> {plan.cost}</p>
+        <p className="flex justify-between"><span>Tooth:</span> {plan.tooth_status.name}</p>
+        <div className="flex text-2xl justify-center mt-2">
+          <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+            <MdEdit className="text-sm md:text-base" />
+          </div>
+          <div className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+            <MdDelete className="text-sm md:text-base" />
+          </div>
+        </div>
+    </div>
+  ));
 
   async function AddCategory() {
     setIsLoading(true);
@@ -120,10 +153,10 @@ export default function TreatmentsPlans() {
           },
         });
         setAddCategoryBox(false);
-        setCategory({
-          id: null,
-          name: ""
-        })
+        // setCategory({
+        //   id: null,
+        //   name: ""
+        // })
         setRefreshFlag((prev) => prev + 1);
         setModal({
           isOpen: true,
@@ -145,22 +178,22 @@ export default function TreatmentsPlans() {
   async function EditCategory() {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("name", oldCategory.name);
+    formData.append("name", category.name);
     formData.append("_method", "patch");
     try {
-      await axios.post(`${BaseUrl}/category/${oldCategory.id}`, formData,
+      await axios.post(`${BaseUrl}/category/${category.id}`, formData,
         {
           headers: {
             // Accept: "application/json",
             // Authorization: `Bearer ${token}`,
           },
         });
-        setEditCategoryBox(false);
         setOldCategory({
-          id: null,
-          name: oldCategory.name
+          id: category.id,
+          name: category.name
         })
-        setSelectedType(oldCategory.name);
+        setEditCategoryBox(false);
+        setSelectedType(category.name);
         setRefreshFlag((prev) => prev + 1);
         setModal({
           isOpen: true,
@@ -179,10 +212,10 @@ export default function TreatmentsPlans() {
     }
   }
 
-  async function handleDelete() {
+  async function DeleteCategory() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/category/${category.id}`,
+      await axios.delete(`${BaseUrl}/category/${oldCategory.id}`,
         {
           headers: {
             // Accept: "application/json",
@@ -251,7 +284,7 @@ export default function TreatmentsPlans() {
           </div>
         </div>
         <div className="content grid md:grid-cols-3 lg:grid-cols-6 gap-3 py-5">
-          {/* {showCards} */}
+          {showPlans}
         </div>
       </div>
 
@@ -302,9 +335,9 @@ export default function TreatmentsPlans() {
                 <label className="px-4 mb-2">Name</label>
                 <input
                 name="name"
-                value={oldCategory.name}
+                value={category.name}
                 onChange={(e) =>
-                  setOldCategory((prev) => ({
+                  setCategory((prev) => ({
                     ...prev,
                     name: e.target.value,
                   }))
@@ -318,10 +351,10 @@ export default function TreatmentsPlans() {
             <div className="flex justify-center w-full mt-5">
               <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
                 setEditCategoryBox(false);
-                setOldCategory((prev) => ({
-                  ...prev,
-                  name: category.name
-                }))
+                setCategory({
+                  id: category.id,
+                  name: oldCategory.name
+                })
               }}>Cancel</button>
               <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => EditCategory()}>Edit</button>
             </div>
@@ -329,12 +362,13 @@ export default function TreatmentsPlans() {
         </div>
       }
 
-      {confirmDelete && <ConfirmDelete onClick1={() => {
-        setConfirmDelete(false);
-      }} onClick2={() => handleDelete()} name={oldCategory.name} />}
+      {confirmDelete && <ConfirmDelete
+        onClick1={() => {setConfirmDelete(false)}}
+        onClick2={() => DeleteCategory()} name={category.name}
+        plan={true}/>}
 
       {isLoading && <Loading />}
-      
+
       {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image}/>}
 
     </>

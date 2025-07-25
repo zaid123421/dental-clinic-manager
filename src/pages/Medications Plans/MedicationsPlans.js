@@ -68,7 +68,6 @@ export default function MedicationsPlans() {
         },
       })
       .then((data) => {
-        console.log(data.data.data)
         setCards(data.data.data);
       })
       .catch((error) => {
@@ -567,7 +566,8 @@ export default function MedicationsPlans() {
         ...prev,
         name: ""
       }))}}
-      onClick2={() => handleDelete()} />}
+      onClick2={() => handleDelete()} />
+      }
 
       {isLoading && <Loading />}
 
