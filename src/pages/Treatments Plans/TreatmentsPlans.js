@@ -5,6 +5,8 @@ import PlusButton from "../../components/PlusButton";
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
 import Modal from "../../components/Modal"
+import Loading from "../../components/Loading";
+import ConfirmDelete from "../../components/ConfirmDelete";
 // import icons
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
@@ -16,8 +18,8 @@ import { BaseUrl } from "../../config";
 // import images
 import successImage from '../../assets/success.gif';
 import error from '../../assets/error.gif';
-import Loading from "../../components/Loading";
-import ConfirmDelete from "../../components/ConfirmDelete";
+
+import { useNavigate } from "react-router-dom";
 
 export default function TreatmentsPlans() {
   // States
@@ -110,14 +112,17 @@ export default function TreatmentsPlans() {
 
   useEffect(() => {
   if (addCategoryBox || editCategoryBox || confirmCategoryDelete || addBox || confirmPlanDelete) {
-    document.body.style.overflow = "hidden"; 
+    document.body.style.overflow = "hidden";
   } else {
     document.body.style.overflow = "auto";
   }
   return () => {
-    document.body.style.overflow = "auto";  
+    document.body.style.overflow = "auto";
   };
   }, [addCategoryBox, editCategoryBox, confirmCategoryDelete, addBox, confirmPlanDelete]);
+
+  // useNavigate
+  const nav = useNavigate();
 
   // Destructure
   const allCategories = [{ name: "All" }, ...categories];
@@ -158,7 +163,7 @@ export default function TreatmentsPlans() {
         <p className=" flex justify-between">Name: <span className="ml-2 text-[#089bab]">{plan.name}</span></p>
         <p className="flex justify-between">Category: <span className="ml-2 text-[#089bab]">{plan.category.name}</span></p>
         <p className="flex justify-between">Cost: <span className="ml-2 text-[#089bab]">{plan.cost.toLocaleString()}</span></p>
-        <p className="flex justify-between">Tooth Status after Plan: <span className="ml-2 text-[#089bab]">{plan.tooth_status.name}</span></p>
+        <p className="flex justify-between">Tooth Status After Plan: <span className="ml-2 text-[#089bab]">{plan.tooth_status.name}</span></p>
         <div className="flex text-2xl justify-center mt-2">
           <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
             <MdEdit className="text-sm md:text-base" />
@@ -323,7 +328,6 @@ export default function TreatmentsPlans() {
   }
 
   async function AddPlan() {
-    console.log(plan);
     setIsLoading(true);
     const formData = new FormData();
     formData.append("name", plan.name);
@@ -331,14 +335,13 @@ export default function TreatmentsPlans() {
     formData.append("cost", plan.cost);
     formData.append("tooth_status_id", plan.tooth_status);
     try {
-      await axios.post(`${BaseUrl}/treatment-plan`, formData,
+      const res = await axios.post(`${BaseUrl}/treatment-plan`, formData,
         {
           headers: {
             // Accept: "application/json",
             // Authorization: `Bearer ${token}`,
           },
         });
-        setAddBox(false);
           setPlan(() => ({
             id: null,
             name: "",
@@ -346,12 +349,16 @@ export default function TreatmentsPlans() {
             cost: null,
             tooth_status: "",
           }))
-        setRefreshFlag((prev) => prev + 1);
-        setModal({
-          isOpen: true,
-          message: "The Plan Has Been Added Successfully !",
-          image: successImage,
-        });
+          setRefreshFlag((prev) => prev + 1);
+          setModal({
+            isOpen: true,
+            message: "The Plan Has Been Added Successfully !",
+            image: successImage,
+          });
+          setAddBox(false);
+          setTimeout(() => {
+            nav(`/treatment-plan?id=${res.data.data.id}`);
+        }, 3000);
     } catch (err) {
       console.log(err);
       setModal({
@@ -398,7 +405,10 @@ export default function TreatmentsPlans() {
           <p className="text-3xl font-semibold ml-1 mr-4">{selectedType === "All" ? "All Categories" : selectedType}</p>
           <div className={`${selectedType === "All" ? "hidden" : "flex"}`}>
             <MdDelete onClick={() => setConfirmCategoryDelete(true)} className="text-xl text-red-500 md:text-2xl mr-2 hover:text-red-600 duration-300 cursor-pointer" />
-            <MdEdit onClick={() => setEditCategoryBox(true)} className="text-xl md:text-2xl text-[#089bab] hover:text-[#087b88] duration-300 cursor-pointer" />
+            <MdEdit onClick={() => {
+              console.log(oldCategory);
+              setEditCategoryBox(true)
+            }} className="text-xl md:text-2xl text-[#089bab] hover:text-[#087b88] duration-300 cursor-pointer" />
           </div>
         </div>
         <div className="content grid md:grid-cols-2 lg:grid-cols-4 gap-3 py-5">
@@ -453,9 +463,9 @@ export default function TreatmentsPlans() {
                 <label className="px-4 mb-2">Name</label>
                 <input
                 name="name"
-                value={category.name}
+                value={oldCategory.name}
                 onChange={(e) =>
-                  setCategory((prev) => ({
+                  setOldCategory((prev) => ({
                     ...prev,
                     name: e.target.value,
                   }))
@@ -469,10 +479,10 @@ export default function TreatmentsPlans() {
             <div className="flex justify-center w-full mt-5">
               <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
                 setEditCategoryBox(false);
-                setCategory({
-                  id: category.id,
-                  name: oldCategory.name
-                })
+                // setOldCategory({
+                //   id: category.id,
+                //   name: category.name
+                // })
               }}>Cancel</button>
               <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => EditCategory()}>Edit</button>
             </div>
@@ -517,14 +527,14 @@ export default function TreatmentsPlans() {
                 </select>
               </div>
               <div className="flex items-center justify-between">
-                <label className="px-4 mb-2 font-semibold">Tooth Status</label>
+                <label className="px-4 mb-2 font-semibold">Tooth Status After Plan</label>
                 <select
                   value={plan.tooth_status}
                   onChange={(e) => setPlan((prev) => ({
                     ...prev,
                     tooth_status: e.target.value
                   }))}
-                  className="w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="min-w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
                   <option>None</option>
                   {showToothNames}
@@ -564,7 +574,16 @@ export default function TreatmentsPlans() {
         plan={true}/>}
 
       {confirmPlanDelete && <ConfirmDelete
-        onClick1={() => {setConfirmPlanDelete(false)}}
+        onClick1={() => {
+          setConfirmPlanDelete(false)
+          setPlan({
+            id: null,
+            name: "",
+            category: "",
+            cost: null,
+            tooth_status: "",
+          })
+        }}
         onClick2={() => DeletePlan()} name={plan.name}/>}
 
       {isLoading && <Loading />}
