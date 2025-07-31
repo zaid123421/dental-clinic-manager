@@ -10,6 +10,9 @@ import Modal from "../../components/Modal";
 import successImage from '../../assets/success.gif';
 import error from '../../assets/error.gif';
 import TreatmentNoteDropDown from "../../components/TreatmentNoteDropDown";
+import { MdEdit, MdDelete } from "react-icons/md";
+import { FaPlus } from "react-icons/fa6";
+
 
 export default function TreatmentPlan() {
 
@@ -18,6 +21,7 @@ export default function TreatmentPlan() {
   const [categories, setCategories] = useState([]);
   const [tooth, setTooth] = useState([]);
   const [addStep, setAddStep] = useState(false);
+  const [addSubstep, setAddSubstep] = useState(false);
   const [medications, setMedicationsPlans] = useState(null);
   const [treatmentsNotes, setTreatmentsNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +32,13 @@ export default function TreatmentPlan() {
     optionality: 0,
     medication_plan: null,
     treatment_note: null
+  })
+
+  const [substepInfo, setSubstepInfo] = useState({
+    step_id: null,
+    name: "",
+    number: null,
+    optionality: 0,
   })
 
   const [modal, setModal] = useState({
@@ -101,7 +112,7 @@ export default function TreatmentPlan() {
       });
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     axios
       .get(`${BaseUrl}/treatment-note`, {
         headers: {
@@ -144,12 +155,65 @@ export default function TreatmentPlan() {
     <div className="border-none outline-none" key={index} value={onlyTooth.id}>{onlyTooth.name}</div>
   ));
 
+  const showSteps = plan?.steps?.map((step, index) => (
+    <div key={index} className="mt-5 md:mt-4">
+      <div className="flex items-center flex-col md:flex-row">
+        <span className="text-xl font-semibold">{step.queue}.  {step.name}</span>
+        <span className="mx-3 text-base font-semibold text-gray-500">{step.optional === 0 ? "(Mandatory)" : "(Optional)"}</span>
+        <div className="flex text-white">
+          <div onClick={() => {
+            setAddSubstep(true);
+            setSubstepInfo((prev) => ({
+              ...prev,
+              step_id: step.id
+            }))
+            }} title="Add Substep" className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+            <FaPlus className="text-lg"/>
+          </div>
+          <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+            <MdEdit className="text-lg" />
+          </div>
+          <div onClick={(e) => {}} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+            <MdDelete className="text-lg" />
+          </div>
+        </div>
+      </div>
+      <div className="md:ml-5 font-semibold text-gray-500 flex justify-center md:justify-start">
+        <span className="mr-3">{step.medication_plan.medication.name}</span>
+        <span>{step.treatment_note.title}</span>
+      </div>
+      <div className="ml-8 mt-1 space-y-1 font-semibold">
+      {step?.treatment_substeps?.map((sub, subIndex) => (
+        <div key={subIndex} className="text-gray-700 flex">
+          <div>
+            <span className="mr-2">{step.queue}.{sub.queue}</span>
+            <span>{sub.name}</span>
+            <span className="ml-2 text-xs text-gray-500">
+              {sub.optional === 0 ? "(Mandatory)" : "(Optional)"}
+            </span>
+          </div>
+          <div className="flex ml-3">
+          <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+            <MdEdit className="text-lg" />
+          </div>
+          <div onClick={(e) => {}} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+            <MdDelete className="text-lg" />
+          </div>
+          </div>
+        </div>
+      ))}
+    </div>
+    </div>
+  ));
+
+
   async function Add(){
+    console.log(stepInfo);
     setIsLoading(true);
     const formData = new FormData();
     formData.append("treatment_plan_id", PlanId);
     formData.append("name", stepInfo.name);
-    formData.append("queue", stepInfo.number);
+    formData.append("queue", stepInfo.number !== null ? stepInfo.number : 0);
     formData.append("optional", stepInfo.optionality);
     formData.append("medication_plan_id", stepInfo.medication_plan);
     formData.append("treatment_note_id", stepInfo.treatment_note);
@@ -175,6 +239,47 @@ export default function TreatmentPlan() {
             image: successImage,
           });
     } catch (err) {
+      console.log(err)
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function AddSubstep() {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("treatment_step_id", substepInfo.step_id);
+    formData.append("name", substepInfo.name);
+    formData.append("queue", substepInfo.number !== null ? substepInfo.number : 0);
+    formData.append("optional", substepInfo.optionality);
+    try {
+      await axios.post(`${BaseUrl}/treatment-substep`, formData,
+        {
+          headers: {
+            // Accept: "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        });
+          setSubstepInfo({
+            step_id: null,
+            name: "",
+            number: null,
+            optionality: 0,
+          });
+          setAddStep(false);
+          setModal({
+            isOpen: true,
+            message: "The Substep Has Been Added Successfully!",
+            image: successImage,
+          });
+          setAddSubstep(false);
+    } catch (err) {
+      console.log(err)
         setModal({
           isOpen: true,
           message: "Something Went Wrong !",
@@ -253,11 +358,12 @@ export default function TreatmentPlan() {
               <button className="text-sm md:text-xl rounded-xl bg-[#089bab] text-white px-4 py-1 hover:text-black hover:bg-transparent duration-300 border-2 border-[#089bab]">Save Changes</button>
             </div>
           </div>
-          <div className="bg-gray-200 lg:w-1/2 mt-5 lg:mt-0">
+          <div className="bg-gray-200 rounded-xl p-5 lg:w-1/2 mt-5 lg:mt-0">
             <div className="flex items-center">
               <h1 className="text-2xl font-semibold">Steps</h1>
               <button onClick={() => setAddStep(true)} className="flex items-center justify-center w-[25px] h-[25px] ml-3 text-xl rounded-full bg-[#089bab] text-white hover:text-black hover:bg-transparent duration-300 border-2 border-[#089bab]">+</button>
             </div>
+            {showSteps}
           </div>
         </div>
       </div>
@@ -311,7 +417,6 @@ export default function TreatmentPlan() {
                 <label className="pr-4 mb-2 font-semibold">Treatment Note</label>
                 <TreatmentNoteDropDown
                   treatmentsNotes={treatmentsNotes}
-                  // selected={stepInfo.treatment_note}
                   onSelect={(med) =>
                     setStepInfo((prev) => ({
                       ...prev,
@@ -363,17 +468,86 @@ export default function TreatmentPlan() {
         </div>
       }
 
+      {
+        addSubstep &&
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div className=" mb-5 w-full">
+              <h1 className="font-bold text-2xl text-center">Add Substep</h1>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="pr-4 mb-2">Name</label>
+                <input
+                  name="name"
+                  value={substepInfo.name}
+                  onChange={(e) =>
+                    setSubstepInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                autoFocus
+                placeholder="Add substep name"
+                className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
+                />
+              </div>
+              <div className="flex my-3 font-semibold justify-between items-center">
+                <label className="pr-4">Number</label>
+                <input placeholder="Substep number" type="number"
+                  value={substepInfo.number}
+                  onChange={(e) => setSubstepInfo((prev) => ({
+                    ...prev,
+                    number: e.target.value
+                  }))}
+                  className="placeholder:text-base w-[150px] bg-gray-200 text-center outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl px-2 py-1"
+                />
+              </div>
+              <div className="flex items-center justify-between font-semibold">
+                <label className="pr-4">Optionality</label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={substepInfo.optionality === 1}
+                      onChange={() =>
+                        setSubstepInfo((prev) => ({
+                          ...prev,
+                          optionality: prev.optionality === 1 ? 0 : 1,
+                        }))
+                      }
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
+                        stepInfo.optionality === 1 ? 'bg-gray-300' : 'bg-[#089bab]'
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+                          stepInfo.optionality === 1 ? 'translate-x-4' : 'translate-x-0'
+                        }`}
+                      />
+                    </div>
+                    <span className="ml-2 text-sm w-[75px]">
+                      {stepInfo.optionality === 1 ? "Optional" : "Mandatory"}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center w-full mt-5">
+              <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
+                setAddSubstep(false);
+              }}>Cancel</button>
+              <button onClick={() => AddSubstep()} className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">Add</button>
+            </div>
+          </div>
+        </div>
+      }
+
       {isLoading && <Loading />}
 
       {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image}/>}
 
-
     </>
   );
 }
-
-
-{/* <p className="ml-10 flex-1 pr-5">{plan?.name || ""}</p> */}
-{/* <p className="ml-10 flex-1 pr-5">{plan?.category?.name || ""}</p> */}
-{/* <p className="ml-10 flex-1 pr-5">{plan?.tooth_status?.name || ""}</p> */}
-{/* <p className="ml-10 flex-1 pr-5">{plan?.cost.toLocaleString() || ""}</p> */}
