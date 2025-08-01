@@ -128,7 +128,7 @@ export default function TreatmentsPlans() {
   const allCategories = [{ name: "All" }, ...categories];
 
   // Mapping
-  const showCategories = allCategories.map((category, index) => (
+  const showCategories = allCategories?.map((category, index) => (
     <button
       onClick={() => {
         setSelectedType(category.name);
@@ -146,24 +146,24 @@ export default function TreatmentsPlans() {
     </button>
   ));
 
-  const showCategoriesOptions = categories.map((category, index) => (
+  const showCategoriesOptions = categories?.map((category, index) => (
     <option className="border-none outline-none" key={index} value={category.id}>{category.name}</option>
   ));
 
-  const showToothNames = tooth.map((onlyTooth, index) => (
+  const showToothNames = tooth?.map((onlyTooth, index) => (
     <option className="border-none outline-none" key={index} value={onlyTooth.id}>{onlyTooth.name}</option>
   ));
 
   const filteredPlans = selectedType === "All"
     ? plans
-    : plans.filter(plan => plan.category?.name === selectedType);
+    : plans?.filter(plan => plan.category.name === selectedType);
 
-  const showPlans = filteredPlans.map((plan, index) => (
+  const showPlans = filteredPlans?.map((plan, index) => (
     <div key={index} className="bg-white shadow-md p-3 rounded-xl text-lg font-semibold overflow-hidden">
         <p className=" flex justify-between">Name: <span className="ml-2 text-[#089bab]">{plan.name}</span></p>
         <p className="flex justify-between">Category: <span className="ml-2 text-[#089bab]">{plan.category.name}</span></p>
         <p className="flex justify-between">Cost: <span className="ml-2 text-[#089bab]">{plan.cost.toLocaleString()}</span></p>
-        <p className="flex justify-between">Tooth Status After Plan: <span className="ml-2 text-[#089bab]">{plan.tooth_status.name}</span></p>
+        <p className="flex justify-between">Tooth Status After Plan: <span className="ml-2 text-[#089bab]">{plan.tooth_status?.name}</span></p>
         <div className="flex text-2xl justify-center mt-2">
           <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
             <MdEdit className="text-sm md:text-base" />

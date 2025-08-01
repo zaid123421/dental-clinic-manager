@@ -12,10 +12,10 @@ import error from '../../assets/error.gif';
 import TreatmentNoteDropDown from "../../components/TreatmentNoteDropDown";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { FaPlus } from "react-icons/fa6";
+import ConfirmDelete from "../../components/ConfirmDelete";
 
 
 export default function TreatmentPlan() {
-
   // useState
   const [plan, setPlan] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -25,8 +25,12 @@ export default function TreatmentPlan() {
   const [medications, setMedicationsPlans] = useState(null);
   const [treatmentsNotes, setTreatmentsNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshFlag, setRefreshFlag] = useState(0);
+  const [confirmDeleteStep, setConfirmDeleteStep] = useState(false);
+  const [confirmDeleteSubstep, setConfirmDeleteSubstep] = useState(false);
 
   const [stepInfo, setStepInfo] = useState({
+    id: null,
     name: "",
     number: null,
     optionality: 0,
@@ -35,6 +39,7 @@ export default function TreatmentPlan() {
   })
 
   const [substepInfo, setSubstepInfo] = useState({
+    id: null,
     step_id: null,
     name: "",
     number: null,
@@ -65,7 +70,7 @@ export default function TreatmentPlan() {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [refreshFlag]);
 
   useEffect(() => {
   axios
@@ -173,7 +178,13 @@ export default function TreatmentPlan() {
           <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
             <MdEdit className="text-lg" />
           </div>
-          <div onClick={(e) => {}} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+          <div onClick={(e) => {
+            setConfirmDeleteStep(true)
+            setStepInfo({
+              id: step.id,
+              name: step.name
+            })
+            }} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
             <MdDelete className="text-lg" />
           </div>
         </div>
@@ -196,7 +207,14 @@ export default function TreatmentPlan() {
           <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
             <MdEdit className="text-lg" />
           </div>
-          <div onClick={(e) => {}} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+          <div onClick={(e) => {
+            e.stopPropagation();
+            setConfirmDeleteSubstep(true);
+            setSubstepInfo({
+              id: sub.id,
+              name: sub.name
+            })
+          }} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
             <MdDelete className="text-lg" />
           </div>
           </div>
@@ -206,9 +224,7 @@ export default function TreatmentPlan() {
     </div>
   ));
 
-
   async function Add(){
-    console.log(stepInfo);
     setIsLoading(true);
     const formData = new FormData();
     formData.append("treatment_plan_id", PlanId);
@@ -217,6 +233,9 @@ export default function TreatmentPlan() {
     formData.append("optional", stepInfo.optionality);
     formData.append("medication_plan_id", stepInfo.medication_plan);
     formData.append("treatment_note_id", stepInfo.treatment_note);
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
     try {
       await axios.post(`${BaseUrl}/treatment-step`, formData,
         {
@@ -225,6 +244,7 @@ export default function TreatmentPlan() {
             // Authorization: `Bearer ${token}`,
           },
         });
+          setRefreshFlag((prev) => prev + 1);
           setStepInfo({
             name: "",
             number: null,
@@ -256,7 +276,7 @@ export default function TreatmentPlan() {
     formData.append("treatment_step_id", substepInfo.step_id);
     formData.append("name", substepInfo.name);
     formData.append("queue", substepInfo.number !== null ? substepInfo.number : 0);
-    formData.append("optional", substepInfo.optionality);
+    formData.append("optional", substepInfo.optionality === "undefined" ? 0 : substepInfo.optionality);
     try {
       await axios.post(`${BaseUrl}/treatment-substep`, formData,
         {
@@ -265,6 +285,7 @@ export default function TreatmentPlan() {
             // Authorization: `Bearer ${token}`,
           },
         });
+          setRefreshFlag((prev) => prev + 1);
           setSubstepInfo({
             step_id: null,
             name: "",
@@ -290,16 +311,84 @@ export default function TreatmentPlan() {
     }
   }
 
+  async function DeleteSubstep() {
+    setIsLoading(true);
+    try {
+      await axios.delete(`${BaseUrl}/treatment-substep/${substepInfo.id}`,
+        {
+          headers: {
+            // Accept: "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        });
+          setSubstepInfo(() => ({
+            id: null,
+            name: "",
+            optionality: 0,
+          }))
+          setRefreshFlag((prev) => prev + 1);
+          setModal({
+            isOpen: true,
+            message: "The Substep Has Been Deleted Successfully !",
+            image: successImage,
+          });
+    } catch {
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: error,
+      });
+    } finally {
+      setConfirmDeleteSubstep(false);
+      setIsLoading(false);
+    }
+  }
+
+  async function DeleteStep() {
+    setIsLoading(true);
+    try {
+      await axios.delete(`${BaseUrl}/treatment-step/${stepInfo.id}`,
+        {
+          headers: {
+            // Accept: "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        });
+          setStepInfo(() => ({
+            name: "",
+            number: null,
+            optionality: 0,
+            medication_plan: null,
+            treatment_note: null
+          }))
+          setRefreshFlag((prev) => prev + 1);
+          setModal({
+            isOpen: true,
+            message: "The Step Has Been Deleted Successfully !",
+            image: successImage,
+          });
+    } catch {
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: error,
+      });
+    } finally {
+      setConfirmDeleteStep(false);
+      setIsLoading(false);
+    }
+  }
+
   return(
     <>
       <Sidebar />
       <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
         <Title label="Treatment Plan Details" />
         {/* Main Details Box */}
-        <div style={{ boxShadow: "0px 15px 20px 5px rgba(0, 0, 0, 0.25)" }}
-        className="bg-white mt-3 p-5 rounded-xl flex flex-col lg:flex-row">
+        <div 
+        className="bg-transparent mt-3 p-5 rounded-xl flex flex-col lg:flex-row">
           <div className="lg:w-1/2 text-xl pr-5">
-            <div className="flex flex-col md:flex-row md:items-center w-full justify-between">
+            <div className=" flex flex-col md:flex-row md:items-center w-full justify-between">
               <p className="font-semibold mb-2 md:mb-0">Name:</p>
               <input
                 name="name"
@@ -312,7 +401,7 @@ export default function TreatmentPlan() {
                 }
                 autoFocus
                 placeholder="Edit Plan name"
-                className="w-full md:w-[200px] md:ml-5 placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
+                className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl py-1 px-4"
                 />
             </div>
             <div className="flex flex-col md:flex-row md:items-center my-2 justify-between">
@@ -323,7 +412,7 @@ export default function TreatmentPlan() {
                   ...prev,
                   category: e.target.value
                 }))}
-                className="w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] rounded-xl px-3 py-1 outline-none cursor-pointer"
               >
                   <option>None</option>
                   {showCategoriesOptions}
@@ -337,7 +426,7 @@ export default function TreatmentPlan() {
                     ...prev,
                     cost: e.target.value
                   }))}
-                  className="w-full md:w-[200px] md:ml-5 placeholder:text-base bg-gray-200 text-center outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl px-2 py-1"
+                  className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 placeholder:text-base text-center outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl px-2 py-1"
                 />
             </div>
             <div className="flex flex-col md:flex-row md:items-center w-full justify-between">
@@ -348,7 +437,7 @@ export default function TreatmentPlan() {
                     ...prev,
                     tooth_status: e.target.value
                   }))}
-                  className="w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
                   <option>None</option>
                   {showToothNames}
@@ -358,7 +447,9 @@ export default function TreatmentPlan() {
               <button className="text-sm md:text-xl rounded-xl bg-[#089bab] text-white px-4 py-1 hover:text-black hover:bg-transparent duration-300 border-2 border-[#089bab]">Save Changes</button>
             </div>
           </div>
-          <div className="bg-gray-200 rounded-xl p-5 lg:w-1/2 mt-5 lg:mt-0">
+          <div 
+          style={{ boxShadow: "0px 15px 20px 5px rgba(0, 0, 0, 0.25)" }}
+          className="bg-white rounded-xl p-5 lg:w-1/2 mt-5 lg:mt-0">
             <div className="flex items-center">
               <h1 className="text-2xl font-semibold">Steps</h1>
               <button onClick={() => setAddStep(true)} className="flex items-center justify-center w-[25px] h-[25px] ml-3 text-xl rounded-full bg-[#089bab] text-white hover:text-black hover:bg-transparent duration-300 border-2 border-[#089bab]">+</button>
@@ -518,17 +609,17 @@ export default function TreatmentPlan() {
                     />
                     <div
                       className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
-                        stepInfo.optionality === 1 ? 'bg-gray-300' : 'bg-[#089bab]'
+                        substepInfo.optionality === 1 ? 'bg-gray-300' : 'bg-[#089bab]'
                       }`}
                     >
                       <div
                         className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
-                          stepInfo.optionality === 1 ? 'translate-x-4' : 'translate-x-0'
+                          substepInfo.optionality === 1 ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </div>
                     <span className="ml-2 text-sm w-[75px]">
-                      {stepInfo.optionality === 1 ? "Optional" : "Mandatory"}
+                      {substepInfo.optionality === 1 ? "Optional" : "Mandatory"}
                     </span>
                   </label>
                 </div>
@@ -542,6 +633,33 @@ export default function TreatmentPlan() {
             </div>
           </div>
         </div>
+      }
+
+      {
+        confirmDeleteStep &&
+        <ConfirmDelete
+          onClick1={() => {
+            setConfirmDeleteStep(false)
+            setStepInfo({
+              id: null,
+              name: "",
+            })
+          }}
+          onClick2={() => DeleteStep()} name={stepInfo.name}/>
+      }
+
+      {
+        confirmDeleteSubstep &&
+        <ConfirmDelete
+          onClick1={() => {
+            setConfirmDeleteStep(false)
+            setSubstepInfo({
+              id: null,
+              name: "",
+              optionality: 0,
+            })
+          }}
+          onClick2={() => DeleteSubstep()} name={substepInfo.name}/>
       }
 
       {isLoading && <Loading />}
