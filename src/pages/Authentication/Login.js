@@ -45,7 +45,7 @@ export default function Login() {
             </Button>
           </form>
         </div>
-        <div className="md:flex-1 flex justify-center mb-2 mt-10 md:mt-0">
+        <div className="md:flex-1 flex justify-center mb-2 md:mb-0 mt-10 md:mt-0">
           <img
             className="w-[100px] h-[100px] md:w-full md:h-full object-cover rounded-2xl"
             src={Manager}
