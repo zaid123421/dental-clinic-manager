@@ -4,7 +4,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { ImageUrl } from "../config";
 
 
-export default function MedicationDropdown({ medications, onSelect }) {
+export default function MedicationDropDown({ medications, onSelect }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
@@ -39,6 +39,7 @@ export default function MedicationDropdown({ medications, onSelect }) {
 
   return (
     <div className="relative w-[150px] mb-5" ref={dropdownRef}>
+
       <button
         onClick={() => setOpen(!open)}
         className="min-w-[150px] px-3 py-1 rounded-xl text-left bg-gray-200 flex justify-between items-center"
@@ -47,7 +48,7 @@ export default function MedicationDropdown({ medications, onSelect }) {
         <IoIosArrowDown />
       </button>
 
-      {open && (
+      {open && medications && medications.length > 0 && (
         <div className="absolute z-50 mt-1 w-full bg-white border rounded shadow max-h-60 overflow-y-auto">
           {medications.map((med) => (
             <div
@@ -120,6 +121,7 @@ export default function MedicationDropdown({ medications, onSelect }) {
           </div>
         </div>
       }
+
     </div>
   );
 }

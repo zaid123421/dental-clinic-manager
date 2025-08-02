@@ -34,6 +34,7 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
 
   return (
     <div className="relative w-[150px] mb-5" ref={dropdownRef}>
+
       <button
         onClick={() => setOpen(!open)}
         className="min-w-[150px] px-3 py-1 rounded-xl text-left bg-gray-200 flex justify-between items-center"
@@ -42,7 +43,7 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
         <IoIosArrowDown />
       </button>
 
-      {open && (
+      {open && treatmentsNotes && treatmentsNotes.length > 0 && (
         <div className="absolute z-50 mt-1 w-full bg-white border rounded shadow max-h-60 overflow-y-auto">
           {treatmentsNotes.map((med) => (
             <div
@@ -60,7 +61,7 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
                     description: med.text,
                     duration_value: med.duration_value,
                     duration_unit: med.duration_unit,
-                  })
+                  });
                   setShowTreatmentNoteDetails(true);
                 }}
               >
@@ -105,6 +106,7 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
           </div>
         </div>
       }
+
     </div>
   );
 }

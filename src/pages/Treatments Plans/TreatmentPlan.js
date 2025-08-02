@@ -4,7 +4,7 @@ import Title from "../../components/Title";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { BaseUrl } from "../../config";
-import MedicationDropdown from "../../components/MedicationDropdown";
+import MedicationDropDown from "../../components/MedicationDropDown";
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import successImage from '../../assets/success.gif';
@@ -165,20 +165,23 @@ export default function TreatmentPlan() {
     }
   }, [modal.isOpen]);
 
+  const showCategoriesOptions = categories ? categories.map((category, index) => (
+    <option className="border-none outline-none" key={index} value={category.id}>
+      {category.name}
+    </option>
+  )) : null;
 
-  const showCategoriesOptions = categories?.map((category, index) => (
-    <option className="border-none outline-none" key={index} value={category.id}>{category.name}</option>
-  ));
+  const showToothNames = tooth ? tooth.map((onlyTooth, index) => (
+    <option className="border-none outline-none" key={index} value={onlyTooth.id}>
+      {onlyTooth.name}
+    </option>
+  )) : null;
 
-  const showToothNames = tooth?.map((onlyTooth, index) => (
-    <option className="border-none outline-none" key={index} value={onlyTooth.id}>{onlyTooth.name}</option>
-  ));
-
-  const showSteps = plan?.steps?.map((step, index) => (
+  const showSteps = plan?.steps ? plan.steps.map((step, index) => (
     <div key={index} className="mt-5 md:mt-4">
       <div className="flex items-center flex-col md:flex-row">
-        <span className="text-xl font-semibold">{step.queue}.  {step.name}</span>
-        <span className="mx-3 text-base font-semibold text-gray-500">{step.optional === 0 ? "(Mandatory)" : "(Optional)"}</span>
+        <span className="text-xl font-semibold">{step?.queue}.  {step?.name}</span>
+        <span className="mx-3 text-base font-semibold text-gray-500">{step?.optional === 0 ? "(Mandatory)" : "(Optional)"}</span>
         <div className="flex text-white">
           <div onClick={() => {
             setAddSubstep(true);
@@ -204,39 +207,108 @@ export default function TreatmentPlan() {
         </div>
       </div>
       <div className="md:ml-5 font-semibold text-gray-500 flex justify-center md:justify-start">
-        <span className="mr-3">{step.medication_plan.medication.name}</span>
-        <span>{step.treatment_note.title}</span>
+        <span className="mr-3">{step?.medication_plan?.medication?.name}</span>
+        <span>{step?.treatment_note?.title}</span>
       </div>
-      <div className="ml-8 mt-1 space-y-1 font-semibold">
-      {step?.treatment_substeps?.map((sub, subIndex) => (
-        <div key={subIndex} className="text-gray-700 flex">
-          <div>
-            <span className="mr-2">{step.queue}.{sub.queue}</span>
-            <span>{sub.name}</span>
-            <span className="ml-2 text-xs text-gray-500">
-              {sub.optional === 0 ? "(Mandatory)" : "(Optional)"}
-            </span>
-          </div>
-          <div className="flex ml-3">
-          <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
-            <MdEdit className="text-lg" />
-          </div>
-          <div onClick={(e) => {
-            e.stopPropagation();
-            setConfirmDeleteSubstep(true);
-            setSubstepInfo({
-              id: sub.id,
-              name: sub.name
-            })
-          }} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
-            <MdDelete className="text-lg" />
-          </div>
-          </div>
+      {step?.treatment_substeps && (
+        <div className="ml-8 mt-1 space-y-1 font-semibold">
+          {step.treatment_substeps.map((sub, subIndex) => (
+            <div key={subIndex} className="text-gray-700 flex">
+              <div>
+                <span className="mr-2">{step?.queue}.{sub?.queue}</span>
+                <span>{sub?.name}</span>
+                <span className="ml-2 text-xs text-gray-500">
+                  {sub?.optional === 0 ? "(Mandatory)" : "(Optional)"}
+                </span>
+              </div>
+              <div className="flex ml-3">
+                <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+                  <MdEdit className="text-lg" />
+                </div>
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDeleteSubstep(true);
+                    setSubstepInfo({
+                      id: sub.id,
+                      name: sub.name
+                    });
+                  }}
+                  className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer"
+                >
+                  <MdDelete className="text-lg" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
-    </div>
-  ));
+  )) : null;
+
+  // const showSteps = plan?.steps?.map((step, index) => (
+  //   <div key={index} className="mt-5 md:mt-4">
+  //     <div className="flex items-center flex-col md:flex-row">
+  //       <span className="text-xl font-semibold">{step?.queue}.  {step?.name}</span>
+  //       <span className="mx-3 text-base font-semibold text-gray-500">{step?.optional === 0 ? "(Mandatory)" : "(Optional)"}</span>
+  //       <div className="flex text-white">
+  //         <div onClick={() => {
+  //           setAddSubstep(true);
+  //           setSubstepInfo((prev) => ({
+  //             ...prev,
+  //             step_id: step.id
+  //           }))
+  //           }} title="Add Substep" className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+  //           <FaPlus className="text-lg"/>
+  //         </div>
+  //         <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+  //           <MdEdit className="text-lg" />
+  //         </div>
+  //         <div onClick={(e) => {
+  //           setConfirmDeleteStep(true)
+  //           setStepInfo({
+  //             id: step.id,
+  //             name: step.name
+  //           })
+  //           }} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+  //           <MdDelete className="text-lg" />
+  //         </div>
+  //       </div>
+  //     </div>
+  //     <div className="md:ml-5 font-semibold text-gray-500 flex justify-center md:justify-start">
+  //       <span className="mr-3">{step?.medication_plan?.medication?.name}</span>
+  //       <span>{step?.treatment_note?.title}</span>
+  //     </div>
+  //     <div className="ml-8 mt-1 space-y-1 font-semibold">
+  //     {step?.treatment_substeps?.map((sub, subIndex) => (
+  //       <div key={subIndex} className="text-gray-700 flex">
+  //         <div>
+  //           <span className="mr-2">{step?.queue}.{sub?.queue}</span>
+  //           <span>{sub?.name}</span>
+  //           <span className="ml-2 text-xs text-gray-500">
+  //             {sub?.optional === 0 ? "(Mandatory)" : "(Optional)"}
+  //           </span>
+  //         </div>
+  //         <div className="flex ml-3">
+  //         <div onClick={(e) => {}} className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer">
+  //           <MdEdit className="text-lg" />
+  //         </div>
+  //         <div onClick={(e) => {
+  //           e.stopPropagation();
+  //           setConfirmDeleteSubstep(true);
+  //           setSubstepInfo({
+  //             id: sub.id,
+  //             name: sub.name
+  //           })
+  //         }} className="text-red-500 p-1 hover:text-black transition duration-300 cursor-pointer">
+  //           <MdDelete className="text-lg" />
+  //         </div>
+  //         </div>
+  //       </div>
+  //     ))}
+  //   </div>
+  //   </div>
+  // ));
 
   function isDirty() {
     if (!originalPlan || !plan) return false;
@@ -587,7 +659,7 @@ export default function TreatmentPlan() {
               </div>
               <div className="flex items-center justify-between items-center">
                 <label className="pr-4 mb-2 font-semibold">Medications Plan</label>
-                <MedicationDropdown
+                <MedicationDropDown
                   medications={medications}
                   onSelect={(med) =>
                     setStepInfo((prev) => ({
