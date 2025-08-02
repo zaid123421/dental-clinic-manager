@@ -9,17 +9,30 @@ import { FaBriefcaseMedical } from "react-icons/fa6";
 import Link from "./Link";
 // import image
 import avatar from "../assets/avatar.webp";
+import Cookies from "universal-cookie";
 
 export default function Sidebar() {
   // States
   const [responsive, setResponsive] = useState(true);
+
+  // Cookies
+  const cookie = new Cookies();
+  const username = cookie.get("username");
+
+  // Functions
+  function capitalizeName(str) {
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
 
   return(
     <div className={`text-sm md:text-lg ${responsive ? `w-[60px]` : 'w-[250px]'} md:w-[250px] text-white bg-[#089bab] h-screen flex flex-col items-center p-5 font-bold fixed z-10 transition-all duration-300`}>
       <button onClick={() => setResponsive(!responsive)} className="md:hidden absolute right-[-15px] top-[20px] text-white bg-[#089bab] w-[20px] h-[50px] rounded-br-lg rounded-tr-lg flex justify-end items-center px-1 "><FaArrowRight className="text-sm" /></button>
       <div className={`flex flex-col items-center md:flex mb-2 ${responsive ? 'hidden' : 'flex'}`}>
         <img className="w-[75px] h-[75px] md:w-[100px] md:h-[100px] rounded-[50%]" src={avatar} alt="profile_picture"></img>
-        <h1 className="text-[16px] md:text-[20px] font-extrabold mt-5">Zaid Alshamaa</h1>
+        <h1 className="text-[16px] md:text-[20px] font-extrabold mt-5">{capitalizeName(username)}</h1>
         <span className="text-xs text-gray-200">The Manager</span>
       </div>
       <ul>

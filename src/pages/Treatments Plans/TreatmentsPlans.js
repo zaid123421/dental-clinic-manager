@@ -35,6 +35,7 @@ export default function TreatmentsPlans() {
   const [isLoading, setIsLoading] = useState(false);
   const [confirmCategoryDelete, setConfirmCategoryDelete] = useState(false);
   const [confirmPlanDelete, setConfirmPlanDelete] = useState(false);
+  
   const [category, setCategory] = useState({
     id: null,
     name: ""

@@ -35,8 +35,9 @@ export default function Login() {
           },
         }
       );
+      console.log(res.data.data.name)
         cookie.set("userAccessToken", res.data.data.token, { path: "/" });
-        console.log(res.data.data.token);
+        cookie.set("username", res.data.data.name, { path: "/" });
         nav("/overview");
     } catch(err) {
       console.log(err);
@@ -45,7 +46,6 @@ export default function Login() {
     }
   }
 
-  console.log(cookie.get("userAccessToken"));
 
   return (
     <>
