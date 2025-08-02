@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
 import { useEffect, useState } from "react";
@@ -13,11 +13,13 @@ import TreatmentNoteDropDown from "../../components/TreatmentNoteDropDown";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { FaPlus } from "react-icons/fa6";
 import ConfirmDelete from "../../components/ConfirmDelete";
-
+import { IoIosArrowBack } from "react-icons/io";
+import Cookies from "universal-cookie";
 
 export default function TreatmentPlan() {
   // useState
   const [plan, setPlan] = useState(null);
+  const [originalPlan, setOriginalPlan] = useState(null);
   const [categories, setCategories] = useState([]);
   const [tooth, setTooth] = useState([]);
   const [addStep, setAddStep] = useState(false);
@@ -57,15 +59,23 @@ export default function TreatmentPlan() {
   const params = new URLSearchParams(location.search);
   const PlanId = params.get('id');
 
+  const nav = useNavigate();
+
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("userAccessToken");
+
   useEffect(() => {
     axios
       .get(`${BaseUrl}/treatment-plan/${PlanId}`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
         setPlan(data.data.data);
+        setOriginalPlan(data.data.data);
       })
       .catch((error) => {
         console.log(error);
@@ -77,6 +87,7 @@ export default function TreatmentPlan() {
     .get(`${BaseUrl}/category`, {
       headers: {
         Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
     .then((data) => {
@@ -107,6 +118,7 @@ export default function TreatmentPlan() {
       .get(`${BaseUrl}/medication-plan`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -122,6 +134,7 @@ export default function TreatmentPlan() {
       .get(`${BaseUrl}/treatment-note`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -152,12 +165,13 @@ export default function TreatmentPlan() {
     }
   }, [modal.isOpen]);
 
+
   const showCategoriesOptions = categories?.map((category, index) => (
     <option className="border-none outline-none" key={index} value={category.id}>{category.name}</option>
   ));
 
   const showToothNames = tooth?.map((onlyTooth, index) => (
-    <div className="border-none outline-none" key={index} value={onlyTooth.id}>{onlyTooth.name}</div>
+    <option className="border-none outline-none" key={index} value={onlyTooth.id}>{onlyTooth.name}</option>
   ));
 
   const showSteps = plan?.steps?.map((step, index) => (
@@ -224,6 +238,16 @@ export default function TreatmentPlan() {
     </div>
   ));
 
+  function isDirty() {
+    if (!originalPlan || !plan) return false;
+    return (
+      plan.name !== originalPlan.name ||
+      plan.cost !== originalPlan.cost ||
+      plan.category?.id !== originalPlan.category?.id ||
+      plan.tooth_status?.id !== originalPlan.tooth_status?.id
+    );
+  }
+
   async function Add(){
     setIsLoading(true);
     const formData = new FormData();
@@ -240,8 +264,8 @@ export default function TreatmentPlan() {
       await axios.post(`${BaseUrl}/treatment-step`, formData,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setRefreshFlag((prev) => prev + 1);
@@ -281,8 +305,8 @@ export default function TreatmentPlan() {
       await axios.post(`${BaseUrl}/treatment-substep`, formData,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setRefreshFlag((prev) => prev + 1);
@@ -317,8 +341,8 @@ export default function TreatmentPlan() {
       await axios.delete(`${BaseUrl}/treatment-substep/${substepInfo.id}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setSubstepInfo(() => ({
@@ -350,8 +374,8 @@ export default function TreatmentPlan() {
       await axios.delete(`${BaseUrl}/treatment-step/${stepInfo.id}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setStepInfo(() => ({
@@ -379,13 +403,72 @@ export default function TreatmentPlan() {
     }
   }
 
+  async function EditPlan() {
+    const formData = new FormData();
+
+    if (plan.name !== originalPlan.name) {
+      formData.append("name", plan.name);
+    }
+
+    if (plan.cost !== originalPlan.cost) {
+      formData.append("cost", plan.cost);
+    }
+
+    if (plan.category?.id !== originalPlan.category?.id) {
+      formData.append("category_id", parseInt(plan.category));
+    }
+
+    if (plan.tooth_status?.id !== originalPlan.tooth_status?.id) {
+      formData.append("tooth_status_id", plan.tooth_status);
+    }
+
+    formData.append("_method", "patch");
+    try {
+      await axios.post(`${BaseUrl}/treatment-plan/${PlanId}`, formData,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+          setPlan(() => ({
+            id: null,
+            name: "",
+            category: "",
+            cost: null,
+            tooth_status: "",
+          }))
+          setRefreshFlag((prev) => prev + 1);
+          setModal({
+            isOpen: true,
+            message: "The Plan Has Been Edited Successfully !",
+            image: successImage,
+          });
+          setTimeout(() => {
+            nav(`/treatments-plans`);
+        }, 3000);
+    } catch (err) {
+      console.log(err);
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: error,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return(
     <>
       <Sidebar />
       <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
-        <Title label="Treatment Plan Details" />
+        <div className="flex items-center">
+          <IoIosArrowBack onClick={() => nav("/treatments-plans")} className="text-2xl cursor-pointer duration-300 hover:text-[#089bab]" />
+          <Title label="Treatment Plan Details" />
+        </div>
         {/* Main Details Box */}
-        <div 
+        <div
         className="bg-transparent mt-3 p-5 rounded-xl flex flex-col lg:flex-row">
           <div className="lg:w-1/2 text-xl pr-5">
             <div className=" flex flex-col md:flex-row md:items-center w-full justify-between">
@@ -407,7 +490,7 @@ export default function TreatmentPlan() {
             <div className="flex flex-col md:flex-row md:items-center my-2 justify-between">
               <p className="font-semibold mb-2 md:mb-0">Category:</p>
               <select
-                value={plan?.category?.name}
+                value={plan?.category?.id}
                 onChange={(e) => setPlan((prev) => ({
                   ...prev,
                   category: e.target.value
@@ -432,7 +515,7 @@ export default function TreatmentPlan() {
             <div className="flex flex-col md:flex-row md:items-center w-full justify-between">
               <p className="font-semibold mb-2 md:mb-0">Tooth Status After Plan:</p>
               <select
-                  value={plan?.tooth_status?.name}
+                  value={plan?.tooth_status?.id}
                   onChange={(e) => setPlan((prev) => ({
                     ...prev,
                     tooth_status: e.target.value
@@ -444,7 +527,17 @@ export default function TreatmentPlan() {
                 </select>
             </div>
             <div className="flex justify-center mt-5">
-              <button className="text-sm md:text-xl rounded-xl bg-[#089bab] text-white px-4 py-1 hover:text-black hover:bg-transparent duration-300 border-2 border-[#089bab]">Save Changes</button>
+              <button
+                disabled={!isDirty()}
+                onClick={EditPlan}
+                className={`text-sm md:text-xl rounded-xl px-4 py-1 border-2 duration-300
+                  ${isDirty()
+                    ? "bg-[#089bab] text-white border-[#089bab] hover:text-black hover:bg-transparent"
+                    : "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"}
+                `}
+              >
+                Save Changes
+              </button>
             </div>
           </div>
           <div 

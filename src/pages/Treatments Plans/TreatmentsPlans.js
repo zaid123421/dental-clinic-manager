@@ -20,6 +20,7 @@ import successImage from '../../assets/success.gif';
 import error from '../../assets/error.gif';
 
 import { useNavigate } from "react-router-dom";
+import Cookies from "universal-cookie";
 
 export default function TreatmentsPlans() {
   // States
@@ -61,6 +62,7 @@ export default function TreatmentsPlans() {
       .get(`${BaseUrl}/category`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -76,6 +78,7 @@ export default function TreatmentsPlans() {
       .get(`${BaseUrl}/treatment-plan`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -91,6 +94,7 @@ export default function TreatmentsPlans() {
       .get(`${BaseUrl}/tooth-status`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -123,6 +127,10 @@ export default function TreatmentsPlans() {
 
   // useNavigate
   const nav = useNavigate();
+
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("userAccessToken");
 
   // Destructure
   const allCategories = [{ name: "All" }, ...categories];
@@ -165,7 +173,7 @@ export default function TreatmentsPlans() {
         <p className="flex justify-between">Cost: <span className="ml-2 text-[#089bab]">{plan.cost.toLocaleString()}</span></p>
         <p className="flex justify-between">Tooth Status After Plan: <span className="ml-2 text-[#089bab]">{plan.tooth_status?.name}</span></p>
         <div className="flex text-2xl justify-center mt-2">
-          <div className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+          <div onClick={() => nav(`/treatment-plan?id=${plan.id}`)} className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
             <MdEdit className="text-sm md:text-base" />
           </div>
           <div onClick={(e) => {
@@ -193,15 +201,12 @@ export default function TreatmentsPlans() {
       await axios.post(`${BaseUrl}/category`, formData, 
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
         setAddCategoryBox(false);
-        // setCategory({
-        //   id: null,
-        //   name: ""
-        // })
+
         setRefreshFlag((prev) => prev + 1);
         setModal({
           isOpen: true,
@@ -223,14 +228,14 @@ export default function TreatmentsPlans() {
   async function EditCategory() {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("name", category.name);
+    formData.append("name", oldCategory.name);
     formData.append("_method", "patch");
     try {
       await axios.post(`${BaseUrl}/category/${category.id}`, formData,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
         setOldCategory({
@@ -263,8 +268,8 @@ export default function TreatmentsPlans() {
       await axios.delete(`${BaseUrl}/category/${oldCategory.id}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setCategory(() => ({
@@ -297,8 +302,8 @@ export default function TreatmentsPlans() {
       await axios.delete(`${BaseUrl}/treatment-plan/${plan.id}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setPlan(() => ({
@@ -338,8 +343,8 @@ export default function TreatmentsPlans() {
       const res = await axios.post(`${BaseUrl}/treatment-plan`, formData,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setPlan(() => ({

@@ -19,6 +19,7 @@ import successImage from '../../assets/success.gif';
 import axios from "axios";
 // import backend server configurations
 import { BaseUrl, ImageUrl } from "../../config";
+import Cookies from "universal-cookie";
 
 export default function MedicationsPlans() {
   // States
@@ -48,6 +49,10 @@ export default function MedicationsPlans() {
     image: null,
   });
 
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("userAccessToken");
+
   // useRef
   const medicationPlanId = useRef(null);
 
@@ -56,6 +61,7 @@ export default function MedicationsPlans() {
       .get(`${BaseUrl}/medication-plan`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -71,6 +77,7 @@ export default function MedicationsPlans() {
       .get(`${BaseUrl}/medication`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -111,8 +118,8 @@ export default function MedicationsPlans() {
       await axios.delete(`${BaseUrl}/medication-plan/${medicationPlan.id}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
         setConfirmDelete(false);
@@ -145,7 +152,7 @@ export default function MedicationsPlans() {
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setAddBox(false);
@@ -188,7 +195,7 @@ export default function MedicationsPlans() {
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setEditBox(false);

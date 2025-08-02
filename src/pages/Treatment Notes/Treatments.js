@@ -18,6 +18,7 @@ import axios from "axios";
 import { BaseUrl } from "../../config";
 // import images
 import successImage from '../../assets/success.gif';
+import Cookies from "universal-cookie";
 
 export default function Treatments() {
   // States
@@ -50,12 +51,17 @@ export default function Treatments() {
   // useRef
   const treatmentNoteId = useRef(null);
 
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("userAccessToken");
+
   // useEffect
   useEffect(() => {
     axios
       .get(`${BaseUrl}/treatment-note`, {
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((data) => {
@@ -147,14 +153,25 @@ export default function Treatments() {
   ));
 
   // Functions
+
+  const increment = () => setTreatmentNote((prev) => ({
+    ...prev,
+    duration_value: treatmentNote.duration_value + 1
+  }));
+
+  const decrement = () => setTreatmentNote((prev) => ({
+    ...prev,
+    duration_value: treatmentNote.duration_value > 1 ? treatmentNote.duration_value - 1 : treatmentNote.duration_value
+  }));
+
   async function handleDelete() {
     setIsLoading(true);
     try {
       await axios.delete(`${BaseUrl}/treatment-note/${treatmentNoteId.current}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
         setTreatmentNote((prev) => ({
@@ -191,11 +208,11 @@ export default function Treatments() {
     formData.append("duration_value", treatmentNote.duration_value);
     formData.append("duration_unit", treatmentNote.duration_unit);
     try {
-      await axios.post( `${BaseUrl}/treatment-note`, formData,
+      await axios.post(`${BaseUrl}/treatment-note`, formData,
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setAddBox(false);
@@ -238,7 +255,7 @@ export default function Treatments() {
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setEditBox(false);
@@ -265,16 +282,6 @@ export default function Treatments() {
       setIsLoading(false);
     }
   }
-
-  const increment = () => setTreatmentNote((prev) => ({
-    ...prev,
-    duration_value: treatmentNote.duration_value + 1
-  }));
-
-  const decrement = () => setTreatmentNote((prev) => ({
-    ...prev,
-    duration_value: treatmentNote.duration_value > 1 ? treatmentNote.duration_value - 1 : treatmentNote.duration_value
-  }));
 
   return(
     <>

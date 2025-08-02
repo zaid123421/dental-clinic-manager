@@ -8,7 +8,7 @@ export default function ConfirmDelete({ name, onClick1, onClick2, plan, medicati
         <img alt="image_delete" src={deleteConfirm} className="w-[200px]"/>
         <p className="my-5 text-center">
           Do You Really Want To Delete {name}
-          {plan ? " With All The Treatment Plans Associated With It" : medication ? " With All The Medications Associated With It" : "" }
+          {plan ? " With All The Treatment Plans Associated With It" : medication ? " With All The Medications Plans Associated With It" : "" }
           ?
         </p>
         <div className="flex justify-center w-full">

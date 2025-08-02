@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from "react";
 import { BaseUrl, ImageUrl } from "../../config";
 // import axios
 import axios from "axios";
+import Cookies from "universal-cookie";
 
 export default function Medications() {
   // States
@@ -57,11 +58,16 @@ export default function Medications() {
   const medicationId = useRef();
   const inputImageRef = useRef(null);
 
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("userAccessToken");
+
   // useEffect
   useEffect(() => {
     axios
       .get(`${BaseUrl}/medication`, {
         headers: {
+          Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       })
@@ -192,7 +198,7 @@ export default function Medications() {
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setAddBox(false);
@@ -235,7 +241,7 @@ export default function Medications() {
         {
           headers: {
             Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setEditBox(false);
@@ -268,8 +274,8 @@ export default function Medications() {
       await axios.delete( `${BaseUrl}/medication/${medicationId.current}`,
         {
           headers: {
-            // Accept: "application/json",
-            // Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
           setMedicationForm(() => ({
