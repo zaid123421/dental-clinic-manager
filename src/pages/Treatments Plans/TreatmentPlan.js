@@ -103,6 +103,7 @@ export default function TreatmentPlan() {
     .get(`${BaseUrl}/tooth-status`, {
       headers: {
         Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
     .then((data) => {
@@ -327,8 +328,12 @@ export default function TreatmentPlan() {
     formData.append("name", stepInfo.name);
     formData.append("queue", stepInfo.number !== null ? stepInfo.number : 0);
     formData.append("optional", stepInfo.optionality);
-    formData.append("medication_plan_id", stepInfo.medication_plan);
-    formData.append("treatment_note_id", stepInfo.treatment_note);
+    if (stepInfo.medication_plan !== null) {
+      formData.append("medication_plan_id", stepInfo.medication_plan);
+    }
+    if (stepInfo.treatment_note !== null) {
+      formData.append("treatment_note_id", stepInfo.treatment_note);
+    }
     formData.forEach((value, key) => {
       console.log(`${key}: ${value}`);
     });
