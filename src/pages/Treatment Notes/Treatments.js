@@ -286,7 +286,7 @@ export default function Treatments() {
     <>
       <Sidebar />
 
-      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
+      <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Treatments Notes" />
         <div className="mt-3 flex items-center">
           <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[250px] hidden md:flex"

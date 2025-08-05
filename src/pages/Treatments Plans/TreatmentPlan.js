@@ -475,7 +475,7 @@ export default function TreatmentPlan() {
   return(
     <>
       <Sidebar />
-      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
+      <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
         <div className="flex items-center">
           <IoIosArrowBack onClick={() => nav("/treatments-plans")} className="text-2xl cursor-pointer duration-300 hover:text-[#089bab]" />
           <Title label="Treatment Plan Details" />

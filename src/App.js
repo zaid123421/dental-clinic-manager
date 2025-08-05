@@ -15,7 +15,7 @@ export default function App() {
   return (
   <Routes>
     <Route path="/" element={<Login />} />
-    <Route element={<RequireAuth />}>
+    {/* <Route element={<RequireAuth />}> */}
       <Route path="/overview" element={<Overview />} />
       <Route path="/medications" element={<Medications />} />
       <Route path="/medications-plans" element={<MedicationsPlans />} />
@@ -24,7 +24,7 @@ export default function App() {
       <Route path="/treatment-plan" element={<TreatmentPlan />} />
       <Route path="/users" element={<Users />} />
       <Route path="/add-employee" element={<AddEmployee />} />
-    </Route>
+    {/* </Route> */}
   </Routes>
   );
 }

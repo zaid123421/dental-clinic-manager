@@ -33,7 +33,9 @@ export default function Sidebar() {
       <button onClick={() => setResponsive(!responsive)} className="md:hidden absolute right-[-15px] top-[10px] text-white bg-[#089bab] w-[20px] h-[50px] rounded-br-lg rounded-tr-lg flex justify-end items-center px-1 "><FaArrowRight className="text-sm" /></button>
       <div className={`flex flex-col items-center md:flex mb-2 ${responsive ? 'hidden' : 'flex'}`}>
         <img className="w-[75px] h-[75px] md:w-[100px] md:h-[100px] rounded-[50%]" src={avatar} alt="profile_picture"></img>
-        <h1 className="text-[16px] md:text-[20px] font-extrabold mt-5">{capitalizeName(username)}</h1>
+        <h1 className="text-[16px] md:text-[20px] font-extrabold mt-5">
+          {/* {capitalizeName(username)} */}
+        </h1>
         <span className="text-xs text-gray-200">The Manager</span>
       </div>
       <ul>

@@ -388,7 +388,7 @@ export default function TreatmentsPlans() {
   return(
     <>
       <Sidebar />
-      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
+      <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c] overflow-hidden">
         <Title label="Treatments Plans" />
         <div className="mt-3 flex flex-col lg:flex-row">
           <Button onClick={() => setAddBox(true)} className="min-w-[250px] hidden md:flex"

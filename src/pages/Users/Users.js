@@ -15,6 +15,7 @@ import ConfirmDelete from "../../components/ConfirmDelete";
 import successImage from '../../assets/success.gif';
 import error from '../../assets/error.gif';
 import Loading from "../../components/Loading";
+import UnBan from "../../assets/UnBan.jpg"
 import Modal from "../../components/Modal"
 import { GoDash } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
@@ -463,7 +464,7 @@ export default function Users() {
       {confirmUnBanBox &&
         <div className="font-semibold fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[400px] overflow-hidden">
-            <img alt="image_delete" src={error} className="w-[250px]"/>
+            <img alt="image_delete" src={UnBan} className="w-[250px]"/>
             <p className="my-5 text-center">
               Do You Really Want To UnBan The User ?
             </p>

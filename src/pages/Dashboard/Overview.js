@@ -12,7 +12,7 @@ export default function Overview(){
   return(
     <>
       <Sidebar />
-      <div className="page-content px-7 py-5 md:p-5 bg-[#089bab1c]">
+      <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Overview" />
       </div>
     </>
