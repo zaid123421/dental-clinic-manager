@@ -8,6 +8,7 @@ import TreatmentsPlans from "./pages/Treatments Plans/TreatmentsPlans";
 import TreatmentPlan from "./pages/Treatments Plans/TreatmentPlan";
 import RequireAuth from "./pages/Authentication/RequireAuth";
 import Users from "./pages/Users/Users";
+import AddEmployee from "./pages/Users/AddEmployee";
 
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
       <Route path="/treatments-notes" element={<Treatments />} />
       <Route path="/treatment-plan" element={<TreatmentPlan />} />
       <Route path="/users" element={<Users />} />
+      <Route path="/add-employee" element={<AddEmployee />} />
     </Route>
   </Routes>
   );

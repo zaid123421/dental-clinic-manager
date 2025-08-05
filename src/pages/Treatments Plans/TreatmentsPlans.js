@@ -356,6 +356,7 @@ export default function TreatmentsPlans() {
             Authorization: `Bearer ${token}`,
           },
         });
+          setAddBox(false);
           setPlan(() => ({
             id: null,
             name: "",
@@ -369,7 +370,6 @@ export default function TreatmentsPlans() {
             message: "The Plan Has Been Added Successfully !",
             image: successImage,
           });
-          setAddBox(false);
           setTimeout(() => {
             nav(`/treatment-plan?id=${res.data.data.id}`);
         }, 3000);

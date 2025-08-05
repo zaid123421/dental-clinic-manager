@@ -17,9 +17,9 @@ import error from '../../assets/error.gif';
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal"
 import { GoDash } from "react-icons/go";
+import { useNavigate } from "react-router-dom";
 
 export default function Users() {
-  const [addBox, setAddBox] = useState(false);
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [selectedType, setSelectedType] = useState("Employees");
   const [employees, setEmployees] = useState(null);
@@ -55,6 +55,8 @@ export default function Users() {
 
   const banId = useRef(null);
   const banUrl = useRef(null);
+
+  const nav = useNavigate();
 
   // Cookies
   const cookie = new Cookies();
@@ -320,12 +322,12 @@ export default function Users() {
 
           {selectedType === "Employees" ?
           <>
-            <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[250px] hidden md:flex"
+            <Button onClick={() => nav(`/add-employee`)} className="md:mr-5 min-w-[250px] hidden md:flex"
               variant="primary"
               icon={<FiPlus className="mr-3 text-2xl" />}
               children="Add Employee"
             />
-            <PlusButton onClick={() => setAddBox(true)} />
+            <PlusButton onClick={() => nav(`/add-employee`)} />
           </>
           : ""}
           <FormInput icon={<IoIosSearch className="text-black text-lg" />}
