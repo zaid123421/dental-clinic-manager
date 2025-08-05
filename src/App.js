@@ -7,6 +7,7 @@ import MedicationsPlans from "./pages/Medications Plans/MedicationsPlans";
 import TreatmentsPlans from "./pages/Treatments Plans/TreatmentsPlans";
 import TreatmentPlan from "./pages/Treatments Plans/TreatmentPlan";
 import RequireAuth from "./pages/Authentication/RequireAuth";
+import Users from "./pages/Users/Users";
 
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/treatments-plans" element={<TreatmentsPlans />} />
       <Route path="/treatments-notes" element={<Treatments />} />
       <Route path="/treatment-plan" element={<TreatmentPlan />} />
+      <Route path="/users" element={<Users />} />
     </Route>
   </Routes>
   );

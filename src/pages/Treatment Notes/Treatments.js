@@ -153,7 +153,6 @@ export default function Treatments() {
   ));
 
   // Functions
-
   const increment = () => setTreatmentNote((prev) => ({
     ...prev,
     duration_value: treatmentNote.duration_value + 1
@@ -230,11 +229,11 @@ export default function Treatments() {
       });
       } catch (err){
         console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: successImage,
-      });
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: successImage,
+        });
     } finally {
       setIsLoading(false);
     }

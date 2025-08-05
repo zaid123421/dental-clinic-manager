@@ -199,16 +199,25 @@ export default function TreatmentsPlans() {
     const formData = new FormData();
     formData.append("name", category.name);
     try {
-      await axios.post(`${BaseUrl}/category`, formData, 
+      const res = await axios.post(`${BaseUrl}/category`, formData, 
         {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log(res.data.data);
+        setSelectedType(category.name);
         setAddCategoryBox(false);
-
         setRefreshFlag((prev) => prev + 1);
+        setCategory({
+          id: res.data.data.id,
+          name: res.data.data.name
+        })
+        setOldCategory({
+          id: res.data.data.id,
+          name: res.data.data.name
+        })
         setModal({
           isOpen: true,
           message: "The Category Has Been Added Successfully !",
@@ -227,9 +236,12 @@ export default function TreatmentsPlans() {
   }
 
   async function EditCategory() {
+    console.log(category.id)
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("name", oldCategory.name);
+    if(category.name !== oldCategory.name) {
+      formData.append("name", category.name);
+    }
     formData.append("_method", "patch");
     try {
       await axios.post(`${BaseUrl}/category/${category.id}`, formData,
@@ -239,12 +251,8 @@ export default function TreatmentsPlans() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setOldCategory({
-          id: category.id,
-          name: category.name
-        })
+        setSelectedType(category.name)
         setEditCategoryBox(false);
-        setSelectedType(category.name);
         setRefreshFlag((prev) => prev + 1);
         setModal({
           isOpen: true,
@@ -266,7 +274,7 @@ export default function TreatmentsPlans() {
   async function DeleteCategory() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/category/${oldCategory.id}`,
+      await axios.delete(`${BaseUrl}/category/${category.id}`,
         {
           headers: {
             Accept: "application/json",
@@ -412,7 +420,6 @@ export default function TreatmentsPlans() {
           <div className={`${selectedType === "All" ? "hidden" : "flex"}`}>
             <MdDelete onClick={() => setConfirmCategoryDelete(true)} className="text-xl text-red-500 md:text-2xl mr-2 hover:text-red-600 duration-300 cursor-pointer" />
             <MdEdit onClick={() => {
-              console.log(oldCategory);
               setEditCategoryBox(true)
             }} className="text-xl md:text-2xl text-[#089bab] hover:text-[#087b88] duration-300 cursor-pointer" />
           </div>
@@ -469,9 +476,9 @@ export default function TreatmentsPlans() {
                 <label className="px-4 mb-2">Name</label>
                 <input
                 name="name"
-                value={oldCategory.name}
+                value={category.name}
                 onChange={(e) =>
-                  setOldCategory((prev) => ({
+                  setCategory((prev) => ({
                     ...prev,
                     name: e.target.value,
                   }))
@@ -485,12 +492,15 @@ export default function TreatmentsPlans() {
             <div className="flex justify-center w-full mt-5">
               <button className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300" onClick={() => {
                 setEditCategoryBox(false);
-                // setOldCategory({
-                //   id: category.id,
-                //   name: category.name
-                // })
+                setCategory((prev) => ({
+                  ...prev,
+                  name: oldCategory.name
+                }))
               }}>Cancel</button>
-              <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7" onClick={() => EditCategory()}>Edit</button>
+              <button className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              onClick={() =>
+              EditCategory()
+              }>Edit</button>
             </div>
           </div>
         </div>
