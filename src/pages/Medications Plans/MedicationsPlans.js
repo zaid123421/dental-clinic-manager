@@ -14,7 +14,7 @@ import { MdEdit, MdDelete } from "react-icons/md";
 // import hooks
 import { useEffect, useRef, useState } from "react";
 // import images
-import successImage from '../../assets/success.gif';
+import successImage from "../../assets/success.gif";
 // import axios library
 import axios from "axios";
 // import backend server configurations
@@ -51,7 +51,7 @@ export default function MedicationsPlans() {
 
   // Cookies
   const cookie = new Cookies();
-  const token = cookie.get("userAccessToken");
+  const token = cookie.get("token");
 
   // useRef
   const medicationPlanId = useRef(null);
@@ -89,14 +89,14 @@ export default function MedicationsPlans() {
   }, []);
 
   useEffect(() => {
-  if (confirmDelete || addBox || editBox || showBox) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "auto";
-  }
-  return () => {
-    document.body.style.overflow = "auto";
-  };
+    if (confirmDelete || addBox || editBox || showBox) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [confirmDelete, addBox, editBox, showBox]);
 
   useEffect(() => {
@@ -109,26 +109,27 @@ export default function MedicationsPlans() {
   }, [modal.isOpen]);
 
   const showOptions = medications.map((medication, index) => (
-    <option index={index} value={medication.id}>{medication.name}</option>
+    <option index={index} value={medication.id}>
+      {medication.name}
+    </option>
   ));
 
   async function handleDelete() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/medication-plan/${medicationPlan.id}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setConfirmDelete(false);
-        setCount((prev) => prev + 1);
-        setModal({
-          isOpen: true,
-          message: "The Medication Plan Has Been Deleted Successfully !",
-          image: successImage,
-        });
+      await axios.delete(`${BaseUrl}/medication-plan/${medicationPlan.id}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setConfirmDelete(false);
+      setCount((prev) => prev + 1);
+      setModal({
+        isOpen: true,
+        message: "The Medication Plan Has Been Deleted Successfully !",
+        image: successImage,
+      });
     } catch {
       setModal({
         isOpen: true,
@@ -148,30 +149,29 @@ export default function MedicationsPlans() {
     formData.append("duration_value", medicationPlan.duration_value);
     formData.append("duration_unit", medicationPlan.duration_unit);
     try {
-      await axios.post(`${BaseUrl}/medication-plan`, formData,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setAddBox(false);
-        setCount((prev) => prev + 1);
-        setMedicationPlan({
-          id: null,
-          medicationId: null,
-          name: "",
-          dose: "",
-          duration_value: 1,
-          duration_unit: "days",
-        });
-        setModal({
-          isOpen: true,
-          message: "The Medication Plan Has Been Added Successfully !",
-          image: successImage,
+      await axios.post(`${BaseUrl}/medication-plan`, formData, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
-      } catch (err){
-        console.log(err);
+      setAddBox(false);
+      setCount((prev) => prev + 1);
+      setMedicationPlan({
+        id: null,
+        medicationId: null,
+        name: "",
+        dose: "",
+        duration_value: 1,
+        duration_unit: "days",
+      });
+      setModal({
+        isOpen: true,
+        message: "The Medication Plan Has Been Added Successfully !",
+        image: successImage,
+      });
+    } catch (err) {
+      console.log(err);
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
@@ -191,30 +191,33 @@ export default function MedicationsPlans() {
     formData.append("duration_unit", medicationPlan.duration_unit);
     formData.append("_method", "patch");
     try {
-      await axios.post(`${BaseUrl}/medication-plan/${medicationPlan.id}`, formData,
+      await axios.post(
+        `${BaseUrl}/medication-plan/${medicationPlan.id}`,
+        formData,
         {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
-        });
-        setEditBox(false);
-        setCount((prev) => prev + 1);
-        setMedicationPlan({
-          id: null,
-          medicationId: null,
-          name: "",
-          dose: "",
-          duration_value: 1,
-          duration_unit: "days",
-        });
-        setModal({
-          isOpen: true,
-          message: "The Medication Plan Has Been Added Successfully !",
-          image: successImage,
+        }
+      );
+      setEditBox(false);
+      setCount((prev) => prev + 1);
+      setMedicationPlan({
+        id: null,
+        medicationId: null,
+        name: "",
+        dose: "",
+        duration_value: 1,
+        duration_unit: "days",
       });
-      } catch (err){
-        console.log(err)
+      setModal({
+        isOpen: true,
+        message: "The Medication Plan Has Been Added Successfully !",
+        image: successImage,
+      });
+    } catch (err) {
+      console.log(err);
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
@@ -227,17 +230,21 @@ export default function MedicationsPlans() {
 
   // Mapping
   const showCards = cards.map((card, index) => (
-    <div key={index} onClick={() => {
-      setShowBox(true);
-      setMedicationPlan({
-        name: card.medication.name,
-        dose: card.dose,
-        duration_value: card.duration_value,
-        duration_unit: card.duration_unit,
-        info: card.medication.info,
-        image: `${ImageUrl}${card.medication.image}`
-      });
-      }} className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center">
+    <div
+      key={index}
+      onClick={() => {
+        setShowBox(true);
+        setMedicationPlan({
+          name: card.medication.name,
+          dose: card.dose,
+          duration_value: card.duration_value,
+          duration_unit: card.duration_unit,
+          info: card.medication.info,
+          image: `${ImageUrl}${card.medication.image}`,
+        });
+      }}
+      className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
+    >
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
         <img
           className="rounded-md w-full h-full"
@@ -256,176 +263,106 @@ export default function MedicationsPlans() {
         </div>
         <div className="flex justify-between">
           <label className="font-bold mr-2">Duration:</label>
-          <label>{card.duration_value} {card.duration_unit}</label>
+          <label>
+            {card.duration_value} {card.duration_unit}
+          </label>
         </div>
       </div>
       <div className="flex text-2xl justify-center">
-        <div onClick={(e) => {
-          setEditBox(true);
-          e.stopPropagation();
-          setMedicationPlan({
-            id: card.id,
-            medicationId: card.medication.id,
-            name: card.medication.name,
-            dose: card.dose,
-            duration_value: card.duration_value,
-            duration_unit: card.duration_unit
-          });
-        }} className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+        <div
+          onClick={(e) => {
+            setEditBox(true);
+            e.stopPropagation();
+            setMedicationPlan({
+              id: card.id,
+              medicationId: card.medication.id,
+              name: card.medication.name,
+              dose: card.dose,
+              duration_value: card.duration_value,
+              duration_unit: card.duration_unit,
+            });
+          }}
+          className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer"
+        >
           <MdEdit className="text-sm md:text-base" />
         </div>
-        <div onClick={(e) => {
-          e.stopPropagation();
-          medicationPlanId.current = card.id;
-          setConfirmDelete(true);
-          setMedicationPlan((prev) => ({
-            ...prev,
-            id: card.id,
-            name: card.medication.name
-          }))
-        }} className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            medicationPlanId.current = card.id;
+            setConfirmDelete(true);
+            setMedicationPlan((prev) => ({
+              ...prev,
+              id: card.id,
+              name: card.medication.name,
+            }));
+          }}
+          className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer"
+        >
           <MdDelete className="text-sm md:text-base" />
         </div>
       </div>
     </div>
   ));
 
-  const increment = () => setMedicationPlan((prev) => ({
-    ...prev,
-    duration_value: medicationPlan.duration_value + 1
-  }));
+  const increment = () =>
+    setMedicationPlan((prev) => ({
+      ...prev,
+      duration_value: medicationPlan.duration_value + 1,
+    }));
 
-  const decrement = () => setMedicationPlan((prev) => ({
-    ...prev,
-    duration_value: medicationPlan.duration_value > 1 ? medicationPlan.duration_value - 1 : medicationPlan.duration_value
-  }));
+  const decrement = () =>
+    setMedicationPlan((prev) => ({
+      ...prev,
+      duration_value:
+        medicationPlan.duration_value > 1
+          ? medicationPlan.duration_value - 1
+          : medicationPlan.duration_value,
+    }));
 
-  return(
+  return (
     <>
       <Sidebar />
 
       <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Medications Plans" />
         <div className="mt-3 flex items-center">
-          <Button onClick={() => setAddBox(true)} className="md:mr-5 min-w-[250px] hidden md:flex"
+          <Button
+            onClick={() => setAddBox(true)}
+            className="md:mr-5 min-w-[250px] hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication Plan"
           />
           <PlusButton onClick={() => setAddBox(true)} />
-          <FormInput icon={<IoIosSearch className="text-black text-lg" />}
+          <FormInput
+            icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
-            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"/>
+            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
+          />
         </div>
         <div className="content grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 py-5">
           {showCards}
         </div>
       </div>
 
-      {
-        addBox &&
+      {addBox && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
             <div className=" mb-5 w-full">
-              <h1 className="font-bold text-2xl text-center">Add Treatment Note</h1>
+              <h1 className="font-bold text-2xl text-center">
+                Add Treatment Note
+              </h1>
               <div className="flex flex items-center my-3 font-semibold">
                 <label className="px-4 mb-2">Medication Name</label>
-                  <select
-                    value={medicationPlan.medicationId}
-                    onChange={(e) => setMedicationPlan((prev) => ({
-                      ...prev,
-                      medicationId: e.target.value
-                    }))}
-                    className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
-                  >
-                    <option>None</option>
-                    {showOptions}
-                  </select>
-              </div>
-              <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Dose</label>
-                <input
-                name="Medication Name"
-                value={medicationPlan.dose}
-                onChange={(e) =>
-                  setMedicationPlan((prev) => ({
-                    ...prev,
-                    dose: e.target.value,
-                  }))
-                }
-                autoFocus
-                placeholder="Add medication plan dose"
-                className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
-                />
-              </div>
-              <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
-                <label className="px-4 flex-1 mb-[10px]">Duration</label>
-                  <div className="flex items-center mb-[10px]">
-                    <button onClick={decrement} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">−</button>
-                    <input
-                      type="number"
-                      value={medicationPlan.duration_value}
-                      onChange={(e) => setMedicationPlan((prev) => ({
-                        ...prev,
-                        duration_value: e.target.value
-                      }))}
-                      className="bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1"
-                    />
-                    <button onClick={increment} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">+</button>
-                  </div>
-                    <select
-                    value={medicationPlan.duration_unit}
-                    onChange={(e) => setMedicationPlan((prev) => ({
-                      ...prev,
-                      duration_unit: e.target.value
-                    }))}
-                    className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
-                  >
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                    <option value="months">Months</option>
-                  </select>
-              </div>
-            </div>
-
-            <div className="flex justify-center w-full mt-5">
-              <button
-              onClick={() => {
-                setAddBox(false);
-                setMedicationPlan({
-                  id: null,
-                  medicationId: null,
-                  name: "",
-                  dose: "",
-                  duration_value: 1,
-                  duration_unit: "days",
-              });
-              }}
-              className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
-              >Cancel</button>
-              <button
-              onClick={() => Submit()}
-              className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">
-              Add</button>
-            </div>
-          </div>
-        </div>
-      }
-
-      {
-        editBox &&
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
-          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
-            <div className=" mb-5 w-full">
-              <h1 className="font-bold text-2xl text-center">Add Treatment Note</h1>
-              <div className="flex flex items-center my-3 font-semibold">
-                <label className="px-4 mb-2">Medication Name</label>
-                  <select
+                <select
                   value={medicationPlan.medicationId}
-                  onChange={(e) => setMedicationPlan((prev) => ({
-                    ...prev,
-                    medicationId: e.target.value
-                  }))}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      medicationId: e.target.value,
+                    }))
+                  }
                   className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
                   <option>None</option>
@@ -435,133 +372,280 @@ export default function MedicationsPlans() {
               <div className="flex flex-col my-3 font-semibold">
                 <label className="px-4 mb-2">Dose</label>
                 <input
-                name="Medication Name"
-                value={medicationPlan.dose}
-                onChange={(e) =>
-                  setMedicationPlan((prev) => ({
-                    ...prev,
-                    dose: e.target.value,
-                  }))
-                }
-                autoFocus
-                placeholder="Add medication plan dose"
-                className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
+                  name="Medication Name"
+                  value={medicationPlan.dose}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      dose: e.target.value,
+                    }))
+                  }
+                  autoFocus
+                  placeholder="Add medication plan dose"
+                  className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
               </div>
               <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
-                  <div className="flex items-center mb-[10px]">
-                    <button onClick={decrement} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">−</button>
-                    <input
-                      type="number"
-                      value={medicationPlan.duration_value}
-                      onChange={(e) => setMedicationPlan((prev) => ({
-                        ...prev,
-                        duration_value: e.target.value
-                      }))}
-                      className="bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1"
-                    />
-                    <button onClick={increment} className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300">+</button>
-                  </div>
-                    <select
-                    value={medicationPlan.duration_unit}
-                    onChange={(e) => setMedicationPlan((prev) => ({
-                      ...prev,
-                      duration_unit: e.target.value
-                    }))}
-                    className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                <div className="flex items-center mb-[10px]">
+                  <button
+                    onClick={decrement}
+                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
                   >
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                    <option value="months">Months</option>
-                  </select>
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    value={medicationPlan.duration_value}
+                    onChange={(e) =>
+                      setMedicationPlan((prev) => ({
+                        ...prev,
+                        duration_value: e.target.value,
+                      }))
+                    }
+                    className="bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1"
+                  />
+                  <button
+                    onClick={increment}
+                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
+                  >
+                    +
+                  </button>
+                </div>
+                <select
+                  value={medicationPlan.duration_unit}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      duration_unit: e.target.value,
+                    }))
+                  }
+                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                >
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
+                  <option value="months">Months</option>
+                </select>
               </div>
             </div>
 
             <div className="flex justify-center w-full mt-5">
               <button
+                onClick={() => {
+                  setAddBox(false);
+                  setMedicationPlan({
+                    id: null,
+                    medicationId: null,
+                    name: "",
+                    dose: "",
+                    duration_value: 1,
+                    duration_unit: "days",
+                  });
+                }}
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => Submit()}
+                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editBox && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div className=" mb-5 w-full">
+              <h1 className="font-bold text-2xl text-center">
+                Add Treatment Note
+              </h1>
+              <div className="flex flex items-center my-3 font-semibold">
+                <label className="px-4 mb-2">Medication Name</label>
+                <select
+                  value={medicationPlan.medicationId}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      medicationId: e.target.value,
+                    }))
+                  }
+                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                >
+                  <option>None</option>
+                  {showOptions}
+                </select>
+              </div>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="px-4 mb-2">Dose</label>
+                <input
+                  name="Medication Name"
+                  value={medicationPlan.dose}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      dose: e.target.value,
+                    }))
+                  }
+                  autoFocus
+                  placeholder="Add medication plan dose"
+                  className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
+                />
+              </div>
+              <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
+                <label className="px-4 flex-1 mb-[10px]">Duration</label>
+                <div className="flex items-center mb-[10px]">
+                  <button
+                    onClick={decrement}
+                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    value={medicationPlan.duration_value}
+                    onChange={(e) =>
+                      setMedicationPlan((prev) => ({
+                        ...prev,
+                        duration_value: e.target.value,
+                      }))
+                    }
+                    className="bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1"
+                  />
+                  <button
+                    onClick={increment}
+                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
+                  >
+                    +
+                  </button>
+                </div>
+                <select
+                  value={medicationPlan.duration_unit}
+                  onChange={(e) =>
+                    setMedicationPlan((prev) => ({
+                      ...prev,
+                      duration_unit: e.target.value,
+                    }))
+                  }
+                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                >
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
+                  <option value="months">Months</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-center w-full mt-5">
+              <button
+                onClick={() => {
+                  setEditBox(false);
+                  setMedicationPlan({
+                    id: null,
+                    medicationId: null,
+                    name: "",
+                    dose: "",
+                    duration_value: 1,
+                    duration_unit: "days",
+                  });
+                }}
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => Edit()}
+                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBox && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="relative bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div
               onClick={() => {
-                setEditBox(false);
+                setShowBox(false);
                 setMedicationPlan({
-                  id: null,
-                  medicationId: null,
                   name: "",
                   dose: "",
                   duration_value: 1,
                   duration_unit: "days",
-              });
+                  info: "",
+                });
               }}
-              className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
-              >Cancel</button>
-              <button
-              onClick={() => Edit()}
-              className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">
-              Edit</button>
+              className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300"
+            >
+              X
             </div>
-          </div>
-        </div>
-      }
-
-      {
-        showBox &&
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
-          <div className="relative bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
-          <div
-          onClick={() => {
-            setShowBox(false);
-            setMedicationPlan({
-              name: "",
-              dose: "",
-              duration_value: 1,
-              duration_unit: "days",
-              info: "",
-            });
-          }} className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300">X</div>
             <div className=" mb-5 w-full font-semibold">
-              <h1 className="font-bold text-2xl text-center">Medication Plan Details</h1>
+              <h1 className="font-bold text-2xl text-center">
+                Medication Plan Details
+              </h1>
               <div className="my-3 object-cover w-full flex justify-center">
-                <img className="w-[150px] h-[150px]" alt="medication-plan-image" src={medicationPlan.image} />
+                <img
+                  className="w-[150px] h-[150px]"
+                  alt="medication-plan-image"
+                  src={medicationPlan.image}
+                />
               </div>
               <div className="flex justify-between my-3">
                 <label>Name</label>
-                <label className="text-[#089bab] ml-2">{medicationPlan.name}</label>
+                <label className="text-[#089bab] ml-2">
+                  {medicationPlan.name}
+                </label>
               </div>
               <div className="flex flex-col">
                 <label>Description</label>
-                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">{medicationPlan.info}</div>
+                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">
+                  {medicationPlan.info}
+                </div>
               </div>
               <div className="flex justify-between mt-3">
                 <label>Duration</label>
                 <div className="text-[#089bab] ml-2">
-                  <label className="mr-2">{medicationPlan.duration_value}</label>
+                  <label className="mr-2">
+                    {medicationPlan.duration_value}
+                  </label>
                   <label>{medicationPlan.duration_unit}</label>
                 </div>
               </div>
               <div className="flex justify-between mt-3">
                 <label>Dose</label>
-                <label className="text-[#089bab] ml-2">{medicationPlan.dose}</label>
+                <label className="text-[#089bab] ml-2">
+                  {medicationPlan.dose}
+                </label>
               </div>
             </div>
           </div>
         </div>
-      }
+      )}
 
-      {confirmDelete &&
-      <ConfirmDelete
-      name={medicationPlan.name}
-      onClick1={() => {
-        setConfirmDelete(false);
-        setMedicationPlan((prev) => ({
-        ...prev,
-        name: ""
-      }))}}
-      onClick2={() => handleDelete()} />
-      }
+      {confirmDelete && (
+        <ConfirmDelete
+          name={medicationPlan.name}
+          onClick1={() => {
+            setConfirmDelete(false);
+            setMedicationPlan((prev) => ({
+              ...prev,
+              name: "",
+            }));
+          }}
+          onClick2={() => handleDelete()}
+        />
+      )}
 
       {isLoading && <Loading />}
 
-      {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image}/>}
-
+      {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image} />}
     </>
   );
 }

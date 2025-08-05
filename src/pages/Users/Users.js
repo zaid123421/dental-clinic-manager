@@ -1,67 +1,92 @@
+// Components
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
 import PlusButton from "../../components/PlusButton";
 import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
+import ConfirmDelete from "../../components/ConfirmDelete";
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { BaseUrl } from "../../config";
-import Cookies from "universal-cookie";
+import Loading from "../../components/Loading";
+import Modal from "../../components/Modal";
+// Icons
 import { MdDelete } from "react-icons/md";
 import { FaBan } from "react-icons/fa";
-import ConfirmDelete from "../../components/ConfirmDelete";
-import successImage from '../../assets/success.gif';
-import error from '../../assets/error.gif';
-import Loading from "../../components/Loading";
-import UnBan from "../../assets/UnBan.jpg"
-import Modal from "../../components/Modal"
 import { GoDash } from "react-icons/go";
+// Images
+import successImage from "../../assets/success.gif";
+import error from "../../assets/error.gif";
+import UnBan from "../../assets/UnBan.jpg";
+// Hooks
+import { useEffect, useRef, useState } from "react";
+// Axios Library
+import axios from "axios";
+// Commuunicating With Backend
+import { BaseUrl } from "../../config";
+// Cookies
+import Cookies from "universal-cookie";
+// react router dom tool
 import { useNavigate } from "react-router-dom";
 
 export default function Users() {
+  // States
+  // refreshFlag To Refresh The Component After An Event
   const [refreshFlag, setRefreshFlag] = useState(0);
+  // SelectedType To Choose The Type Of Data (Employees Or Patients)
   const [selectedType, setSelectedType] = useState("Employees");
+  // These Two States To Store The Data From The Backend
   const [employees, setEmployees] = useState(null);
   const [patients, setPatients] = useState(null);
+  // Loading Spinner To Communicating With Backend
+  const [isLoading, setIsLoading] = useState(false);
+  // To Show Ban Box
+  const [banBox, setBanBox] = useState(false);
+  // To Show UnBan Confirm Box
+  const [confirmUnBanBox, setConfirmUnBanBox] = useState(false);
+  // To Manipulate Style According To Checked Or Not
+  const [isChecked, setIsChecked] = useState(true);
+  // These Two States To Show Confirm Delete Box (Employee and Patient)
   const [confirmDeleteEmployee, setConfirmDeleteEmployee] = useState(false);
   const [confirmDeletePatient, setConfirmDeletePatient] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [banBox, setBanBox] = useState(false);
-  const [isChecked, setIsChecked] = useState(true);
-  const [confirmUnBanBox, setConfirmUnBanBox] = useState(false);
+
+  // State To Store Ban Duration If its Exist
   const [banDuration, setBanDuration] = useState({
     duration_unit: "days",
-    duration_value: 1
-  })
+    duration_value: 1,
+  });
 
+  // Employee Informations
   const [employee, setEmployee] = useState({
     id: null,
     name: "",
     phone_number: null,
-  })
+  });
 
+  // Patient Informations
   const [patient, setPatient] = useState({
     id: null,
     name: "",
     phone_number: null,
-  })
+  });
 
+  // Modal Informations
   const [modal, setModal] = useState({
     isOpen: false,
     message: "",
     image: "",
   });
 
+  // useRef To Store id and url When Need To Communicating Backend
   const banId = useRef(null);
   const banUrl = useRef(null);
 
+  // useNavigate
   const nav = useNavigate();
 
   // Cookies
   const cookie = new Cookies();
-  const token = cookie.get("userAccessToken");
+  // Get The Token That Stored In The Browser
+  const token = cookie.get("token");
 
   useEffect(() => {
     axios
@@ -118,19 +143,18 @@ export default function Users() {
   async function DeleteEmployee() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/employee/${employee.id}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-          setRefreshFlag((prev) => prev + 1);
-          setModal({
-            isOpen: true,
-            message: "The Employee Has Been Deleted Successfully !",
-            image: successImage,
-          });
+      await axios.delete(`${BaseUrl}/employee/${employee.id}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRefreshFlag((prev) => prev + 1);
+      setModal({
+        isOpen: true,
+        message: "The Employee Has Been Deleted Successfully !",
+        image: successImage,
+      });
     } catch {
       setModal({
         isOpen: true,
@@ -146,19 +170,18 @@ export default function Users() {
   async function DeletePatient() {
     setIsLoading(true);
     try {
-      await axios.delete(`${BaseUrl}/patient/${patient.id}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-          setRefreshFlag((prev) => prev + 1);
-          setModal({
-            isOpen: true,
-            message: "The Patient Has Been Deleted Successfully !",
-            image: successImage,
-          });
+      await axios.delete(`${BaseUrl}/patient/${patient.id}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRefreshFlag((prev) => prev + 1);
+      setModal({
+        isOpen: true,
+        message: "The Patient Has Been Deleted Successfully !",
+        image: successImage,
+      });
     } catch {
       setModal({
         isOpen: true,
@@ -173,25 +196,28 @@ export default function Users() {
 
   async function Ban() {
     const formData = new FormData();
-    if(!isChecked) {
+    if (!isChecked) {
       formData.append("duration_value", banDuration.duration_value);
       formData.append("duration_unit", banDuration.duration_unit);
     }
     setIsLoading(true);
     try {
-      await axios.post(`${BaseUrl}/${banUrl.current}/${banId.current}/ban`, formData,
+      await axios.post(
+        `${BaseUrl}/${banUrl.current}/${banId.current}/ban`,
+        formData,
         {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
-        });
-          setRefreshFlag((prev) => prev + 1);
-          setModal({
-            isOpen: true,
-            message: "The User Has Been Banned Successfully !",
-            image: successImage,
-          });
+        }
+      );
+      setRefreshFlag((prev) => prev + 1);
+      setModal({
+        isOpen: true,
+        message: "The User Has Been Banned Successfully !",
+        image: successImage,
+      });
     } catch {
       setModal({
         isOpen: true,
@@ -202,8 +228,8 @@ export default function Users() {
       setIsChecked(true);
       setBanDuration({
         duration_unit: "days",
-        duration_value: 1
-      })
+        duration_value: 1,
+      });
       setBanBox(false);
       setIsLoading(false);
     }
@@ -212,19 +238,18 @@ export default function Users() {
   async function UnBan() {
     setIsLoading(true);
     try {
-      await axios.get(`${BaseUrl}/${banUrl.current}/${banId.current}/unban`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-          setRefreshFlag((prev) => prev + 1);
-          setModal({
-            isOpen: true,
-            message: "The User Has Been UnBanned Successfully !",
-            image: successImage,
-          });
+      await axios.get(`${BaseUrl}/${banUrl.current}/${banId.current}/unban`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRefreshFlag((prev) => prev + 1);
+      setModal({
+        isOpen: true,
+        message: "The User Has Been UnBanned Successfully !",
+        image: successImage,
+      });
     } catch {
       setModal({
         isOpen: true,
@@ -237,121 +262,186 @@ export default function Users() {
     }
   }
 
-  const increment = () => setBanDuration((prev) => ({
-    ...prev,
-    duration_value: banDuration.duration_value + 1
-  }));
+  const increment = () =>
+    setBanDuration((prev) => ({
+      ...prev,
+      duration_value: banDuration.duration_value + 1,
+    }));
 
-  const decrement = () => setBanDuration((prev) => ({
-    ...prev,
-    duration_value: banDuration.duration_value > 1 ? banDuration.duration_value - 1 : banDuration.duration_value
-  }));
+  const decrement = () =>
+    setBanDuration((prev) => ({
+      ...prev,
+      duration_value:
+        banDuration.duration_value > 1
+          ? banDuration.duration_value - 1
+          : banDuration.duration_value,
+    }));
 
   const showEmployees = employees?.map((employee, index) => (
-    <tr className={`p-3 ${index !== employees.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
-      <td className={`p-3 ${index === employees.length - 1 ? "rounded-bl-2xl" : ""}`}>{employee.name}</td>
+    <tr
+      className={`p-3 ${
+        index !== employees.length - 1 ? "border-b-[1px] border-b-gray-300" : ""
+      } text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}
+    >
+      <td
+        className={`p-3 ${
+          index === employees.length - 1 ? "rounded-bl-2xl" : ""
+        }`}
+      >
+        {employee.name}
+      </td>
       <td className="p-3">{employee.phone_number}</td>
       <td className="p-3">+350000</td>
       <td className="p-3">
-      {employee.is_banned
-        ? <FaBan onClick={(e) => {
-          e.stopPropagation();
-          banId.current = employee.id;
-          banUrl.current = "employee";
-          setConfirmUnBanBox(true)
-        }} className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center" />
-        : <GoDash onClick={(e) =>{
-          e.stopPropagation();
-          banId.current = employee.id;
-          banUrl.current = "employee";
-          setBanBox(true)
-        }
-        } className="text-2xl text-green-500 hover:text-green-700 duration-300 cursor-pointer justify-self-center" />
-      }
+        {employee.is_banned ? (
+          <FaBan
+            onClick={(e) => {
+              e.stopPropagation();
+              banId.current = employee.id;
+              banUrl.current = "employee";
+              setConfirmUnBanBox(true);
+            }}
+            className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center"
+          />
+        ) : (
+          <GoDash
+            onClick={(e) => {
+              e.stopPropagation();
+              banId.current = employee.id;
+              banUrl.current = "employee";
+              setBanBox(true);
+            }}
+            className="text-2xl text-green-500 hover:text-green-700 duration-300 cursor-pointer justify-self-center"
+          />
+        )}
       </td>
-      <td className={`p-3 ${index === employees.length - 1 ? "rounded-br-2xl" : ""}`}><MdDelete onClick={(e) => {
-        e.stopPropagation();
-        setEmployee((prev) => ({
-          ...prev,
-          id: employee.id,
-          name: employee.name
-        }))
-        setConfirmDeleteEmployee(true);
-      }} className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center" /></td>
+      <td
+        className={`p-3 ${
+          index === employees.length - 1 ? "rounded-br-2xl" : ""
+        }`}
+      >
+        <MdDelete
+          onClick={(e) => {
+            e.stopPropagation();
+            setEmployee((prev) => ({
+              ...prev,
+              id: employee.id,
+              name: employee.name,
+            }));
+            setConfirmDeleteEmployee(true);
+          }}
+          className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center"
+        />
+      </td>
     </tr>
   ));
 
   const showPatients = patients?.map((patient, index) => (
-    <tr className={`p-3 ${index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
-      <td className={`p-3 ${index === patients.length - 1 ? "rounded-bl-2xl" : ""}`}>{patient.name}</td>
+    <tr
+      className={`p-3 ${
+        index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""
+      } text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}
+    >
+      <td
+        className={`p-3 ${
+          index === patients.length - 1 ? "rounded-bl-2xl" : ""
+        }`}
+      >
+        {patient.name}
+      </td>
       <td className="p-3">{patient.phone_number}</td>
       <td className="p-3">+350000</td>
       <td className="p-3">
-        {patient.is_banned
-        ? <FaBan onClick={(e) => {
-          e.stopPropagation();
-          banId.current = patient.id;
-          banUrl.current = "patient";
-          setConfirmUnBanBox(true)
-        }} className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center" />
-        : <GoDash onClick={(e) => {
-          e.stopPropagation();
-          banId.current = patient.id;
-          banUrl.current = "patient";
-          setBanBox(true)
-        }} className="text-2xl text-green-500 hover:text-green-700 duration-300 cursor-pointer justify-self-center" />
-        }
+        {patient.is_banned ? (
+          <FaBan
+            onClick={(e) => {
+              e.stopPropagation();
+              banId.current = patient.id;
+              banUrl.current = "patient";
+              setConfirmUnBanBox(true);
+            }}
+            className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center"
+          />
+        ) : (
+          <GoDash
+            onClick={(e) => {
+              e.stopPropagation();
+              banId.current = patient.id;
+              banUrl.current = "patient";
+              setBanBox(true);
+            }}
+            className="text-2xl text-green-500 hover:text-green-700 duration-300 cursor-pointer justify-self-center"
+          />
+        )}
       </td>
-      <td className={`p-3 ${index === patients.length - 1 ? "rounded-br-2xl" : ""}`}><MdDelete onClick={(e) => {
-        e.stopPropagation();
-        setPatient((prev) => ({
-          ...prev,
-          id: patient.id,
-          name: patient.name
-        }))
-        setConfirmDeletePatient(true);
-      }} className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center" /></td>
+      <td
+        className={`p-3 ${
+          index === patients.length - 1 ? "rounded-br-2xl" : ""
+        }`}
+      >
+        <MdDelete
+          onClick={(e) => {
+            e.stopPropagation();
+            setPatient((prev) => ({
+              ...prev,
+              id: patient.id,
+              name: patient.name,
+            }));
+            setConfirmDeletePatient(true);
+          }}
+          className="text-2xl text-red-500 hover:text-red-700 duration-300 cursor-pointer justify-self-center"
+        />
+      </td>
     </tr>
   ));
 
-  return(
+  return (
     <>
       <Sidebar />
       <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Users" />
         <div className="mt-3 flex items-center">
-
-          {selectedType === "Employees" ?
-          <>
-            <Button onClick={() => nav(`/add-employee`)} className="md:mr-5 min-w-[250px] hidden md:flex"
-              variant="primary"
-              icon={<FiPlus className="mr-3 text-2xl" />}
-              children="Add Employee"
-            />
-            <PlusButton onClick={() => nav(`/add-employee`)} />
-          </>
-          : ""}
-          <FormInput icon={<IoIosSearch className="text-black text-lg" />}
+          {selectedType === "Employees" ? (
+            <>
+              <Button
+                onClick={() => nav(`/add-employee`)}
+                className="md:mr-5 min-w-[250px] hidden md:flex"
+                variant="primary"
+                icon={<FiPlus className="mr-3 text-2xl" />}
+                children="Add Employee"
+              />
+              <PlusButton onClick={() => nav(`/add-employee`)} />
+            </>
+          ) : (
+            ""
+          )}
+          <FormInput
+            icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
-            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"/>
+            className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
+          />
         </div>
-          <div className="my-3 rounded-md md:rounded-3xl bg-white flex flex-row gap-2 md:gap-4 w-fit m-auto font-semibold">
-            <button
-              onClick={() => {
-                setSelectedType("Employees");
-              }}
-              className={`${"Employees" === selectedType ? "bg-[#089bab] text-white" : ""} py-2 px-3 rounded-md  md:rounded-3xl hover:text-white hover:bg-[#089bab] duration-300`}
-              >
-              Employees
-            </button>
-            <button
-              onClick={() => {
-                setSelectedType("Patients");
-              }}
-              className={`${"Patients" === selectedType ? "bg-[#089bab] text-white" : ""} py-2 px-3 rounded-md md:rounded-3xl hover:text-white hover:bg-[#089bab] duration-300`}
-              >
-              Patients
-            </button>
+        <div className="my-3 rounded-md md:rounded-3xl bg-white flex flex-row gap-2 md:gap-4 w-fit m-auto font-semibold">
+          <button
+            onClick={() => {
+              setSelectedType("Employees");
+            }}
+            className={`${
+              "Employees" === selectedType ? "bg-[#089bab] text-white" : ""
+            } py-2 px-3 rounded-md  md:rounded-3xl hover:text-white hover:bg-[#089bab] duration-300`}
+          >
+            Employees
+          </button>
+          <button
+            onClick={() => {
+              setSelectedType("Patients");
+            }}
+            className={`${
+              "Patients" === selectedType ? "bg-[#089bab] text-white" : ""
+            } py-2 px-3 rounded-md md:rounded-3xl hover:text-white hover:bg-[#089bab] duration-300`}
+          >
+            Patients
+          </button>
         </div>
         <div className="overflow-x-auto shadow-xl rounded-2xl">
           <table className="w-full bg-transparent">
@@ -369,7 +459,7 @@ export default function Users() {
         </div>
       </div>
 
-      {banBox &&
+      {banBox && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
             {/* Ban State Section (Permanently Or Temporarily) */}
@@ -385,12 +475,12 @@ export default function Users() {
                   />
                   <div
                     className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
-                      isChecked ? 'bg-[#089bab]' : 'bg-gray-300'
+                      isChecked ? "bg-[#089bab]" : "bg-gray-300"
                     }`}
                   >
                     <div
                       className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
-                        isChecked ? 'translate-x-0' : 'translate-x-4'
+                        isChecked ? "translate-x-0" : "translate-x-4"
                       }`}
                     />
                   </div>
@@ -404,97 +494,143 @@ export default function Users() {
             <div className="flex items-center font-semibold w-full mt-5 flex-wrap justify-end md:justify-start">
               <label className="pr-4 flex-1 mb-[10px]">Duration</label>
               {/* Duration Value */}
-                <div className="flex items-center mb-[10px]">
-                  <button
-                    disabled={isChecked}
-                    onClick={decrement}
-                    className={`${isChecked ? 'bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed' : 'bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]'} border-2 border-transparent rounded-full duration-300 w-[25px] h-[25px] flex items-center justify-center`}>−</button>
-                  <input
-                    disabled={isChecked}
-                    type="number"
-                    value={banDuration.duration_value}
-                    onChange={(e) => setBanDuration((prev) => ({
+              <div className="flex items-center mb-[10px]">
+                <button
+                  disabled={isChecked}
+                  onClick={decrement}
+                  className={`${
+                    isChecked
+                      ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                      : "bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]"
+                  } border-2 border-transparent rounded-full duration-300 w-[25px] h-[25px] flex items-center justify-center`}
+                >
+                  −
+                </button>
+                <input
+                  disabled={isChecked}
+                  type="number"
+                  value={banDuration.duration_value}
+                  onChange={(e) =>
+                    setBanDuration((prev) => ({
                       ...prev,
-                      duration_value: e.target.value
-                    }))}
-                    className={`${isChecked ? "text-gray-500 cursor-not-allowed" : "text-black"} bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1 `}
-                  />
-                  <button
-                    disabled={isChecked}
-                    onClick={increment}
-                    className={`${isChecked ? 'bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed' : 'bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]'} border-2 border-transparent rounded-full duration-300 w-[25px] h-[25px] flex items-center justify-center`}>+</button>
-                </div>
-                {/* Duration Unit */}
-                  <select
-                    disabled={isChecked}
-                    value={banDuration.duration_unit}
-                    onChange={(e) => setBanDuration((prev) => ({
-                      ...prev,
-                      duration_unit: e.target.value
-                    }))}
-                    className={`${isChecked ? "cursor-not-allowed" : "cursor-pointer"} mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none`}
-                  >
-                  <option value="days">Days</option>
-                  <option value="weeks">Weeks</option>
-                  <option value="months">Months</option>
-                </select>
+                      duration_value: e.target.value,
+                    }))
+                  }
+                  className={`${
+                    isChecked
+                      ? "text-gray-500 cursor-not-allowed"
+                      : "text-black"
+                  } bg-gray-300 w-20 text-center outline-none border-none rounded-xl mx-2 px-2 py-1 `}
+                />
+                <button
+                  disabled={isChecked}
+                  onClick={increment}
+                  className={`${
+                    isChecked
+                      ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                      : "bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]"
+                  } border-2 border-transparent rounded-full duration-300 w-[25px] h-[25px] flex items-center justify-center`}
+                >
+                  +
+                </button>
+              </div>
+              {/* Duration Unit */}
+              <select
+                disabled={isChecked}
+                value={banDuration.duration_unit}
+                onChange={(e) =>
+                  setBanDuration((prev) => ({
+                    ...prev,
+                    duration_unit: e.target.value,
+                  }))
+                }
+                className={`${
+                  isChecked ? "cursor-not-allowed" : "cursor-pointer"
+                } mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none`}
+              >
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+              </select>
             </div>
             {/* Buttons Section (Cancel + Ban) */}
             <div className="flex justify-center w-full mt-5">
               <button
-              onClick={() => {
-                setIsChecked(true);
-                setBanBox(false);
-                setBanDuration({
-                  duration_unit: "days",
-                  duration_value: 1
-                })
-              }}
-              className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
-              >Cancel</button>
+                onClick={() => {
+                  setIsChecked(true);
+                  setBanBox(false);
+                  setBanDuration({
+                    duration_unit: "days",
+                    duration_value: 1,
+                  });
+                }}
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+              >
+                Cancel
+              </button>
               <button
-              onClick={() => Ban()}
-              className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">
-              Ban</button>
+                onClick={() => Ban()}
+                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                Ban
+              </button>
             </div>
           </div>
         </div>
-      }
+      )}
 
-      {confirmUnBanBox &&
+      {confirmUnBanBox && (
         <div className="font-semibold fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[400px] overflow-hidden">
-            <img alt="image_delete" src={UnBan} className="w-[250px]"/>
+            <img alt="image_delete" src={UnBan} className="w-[250px]" />
             <p className="my-5 text-center">
               Do You Really Want To UnBan The User ?
             </p>
             <div className="flex justify-center w-full">
-              <button onClick={() => setConfirmUnBanBox(false)} className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300">Cancel</button>
-              <button onClick={() => UnBan()} className="w-[85px] bg-[#DD1015] border-2 border-[#DD1015] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7">UnBan</button>
+              <button
+                onClick={() => setConfirmUnBanBox(false)}
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => UnBan()}
+                className="w-[85px] bg-[#DD1015] border-2 border-[#DD1015] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                UnBan
+              </button>
             </div>
           </div>
         </div>
-      }
+      )}
 
       {/* Confirm Delete Employee Box */}
-      {confirmDeleteEmployee && <ConfirmDelete
-      onClick1={() => {setConfirmDeleteEmployee(false)}}
-      onClick2={() => DeleteEmployee()}
-      name={employee.name}
-      />}
+      {confirmDeleteEmployee && (
+        <ConfirmDelete
+          onClick1={() => {
+            setConfirmDeleteEmployee(false);
+          }}
+          onClick2={() => DeleteEmployee()}
+          name={employee.name}
+        />
+      )}
 
       {/* Confirm Delete Patient Box */}
-      {confirmDeletePatient && <ConfirmDelete
-      onClick1={() => {setConfirmDeletePatient(false)}}
-      onClick2={() => DeletePatient()}
-      name={patient.name}
-      />}
+      {confirmDeletePatient && (
+        <ConfirmDelete
+          onClick1={() => {
+            setConfirmDeletePatient(false);
+          }}
+          onClick2={() => DeletePatient()}
+          name={patient.name}
+        />
+      )}
 
       {/* Loading Spinner When Communicating With Backend */}
       {isLoading && <Loading />}
 
       {/* State Of The Communicating With Backend (Successfull Or Failure) */}
-      {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image}/>}
+      {modal.isOpen && <Modal message={modal.message} imageSrc={modal.image} />}
     </>
   );
 }

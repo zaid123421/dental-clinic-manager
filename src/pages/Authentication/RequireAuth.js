@@ -12,7 +12,7 @@ export default function RequireAuth() {
   const nav = useNavigate();
 
   useEffect(() => {
-    const token = cookies.get("userAccessToken");
+    const token = cookies.get("token");
     if (token) {
       checkTokenValidity(token);
     } else {
@@ -25,17 +25,16 @@ export default function RequireAuth() {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    })
-      .then((res) => {
-        console.log(res);
-        if (!res.ok) {
-          handleInvalidToken();
-        }
-      })
+    }).then((res) => {
+      console.log(res);
+      if (!res.ok) {
+        handleInvalidToken();
+      }
+    });
   };
 
   const handleInvalidToken = () => {
-    cookies.remove("userAccessToken");
+    cookies.remove("token");
     setIsValid(false);
     setFailed(true);
     setTimeout(() => {
