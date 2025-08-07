@@ -119,13 +119,15 @@ export default function AddEmployee() {
             onClick={() => nav("/users")}
             className="text-2xl cursor-pointer duration-300 hover:text-[#089bab]"
           />
-          <Title label="Add Employee" />
+          <Title className="flex-1" label="Add Employee" />
         </div>
         {/* Container Of The Page Content */}
-        <div className="p-5 text-xl flex flex-col items-center">
-          <div className="bg-white p-5 rounded-xl shadow-xl flex flex-col lg:flex-row flex-wrap gap-5 my-2 font-semibold w-full">
+        <div className="p-5 text-xl flex flex-col items-center bg-white rounded-xl shadow-xl my-4 ">
+          {/* Informations Section */}
+          <div className="flex flex-col lg:flex-row gap-5 font-semibold w-full">
+
             {/* First Informations Section */}
-            <div className="flex flex-col flex-1 max-w-full">
+            <div className="flex flex-col w-1/3">
               <label className="mb-2">Name</label>
               <input
                 value={employee.name}
@@ -165,6 +167,10 @@ export default function AddEmployee() {
                 className="bg-gray-200 rounded-xl py-1 px-4 outline-none mb-5"
               />
 
+            </div>
+
+            {/* Second Informations Section */}
+            <div className="flex flex-col w-1/3">
               <label className="mb-2">Birthdate</label>
               <input
                 type="date"
@@ -190,10 +196,7 @@ export default function AddEmployee() {
                 <option value="male">Male</option>
                 <option value="female">Female</option>
               </select>
-            </div>
 
-            {/* Second Informations Section */}
-            <div className="flex flex-col flex-1 max-w-full">
               <label className="mb-2">SSN</label>
               <input
                 type="text"
@@ -208,7 +211,10 @@ export default function AddEmployee() {
                 placeholder="SSN"
                 className="bg-gray-200 rounded-xl py-1 px-4 outline-none mb-5 min-w-[150px] max-w-full"
               />
+            </div>
 
+            {/* Third Informations Section */}
+            <div className="flex flex-col w-1/3">
               <label className="mb-2">Address</label>
               <input
                 value={employee.address}
@@ -252,15 +258,15 @@ export default function AddEmployee() {
               </div>
             </div>
 
-            {/* Add Employee Button */}
-            <div className="flex justify-center w-full">
-              <button
-                onClick={() => AddEmployee()}
-                className="px-3 bg-[#089bab] text-white p-1 rounded-xl hover:bg-transparent hover:text-black duration-300 ml-7 border-2 border-[#089bab]"
-              >
-                Add Employee
-              </button>
-            </div>
+          </div>
+          {/* Add Employee Button */}
+          <div className="flex justify-center w-full">
+            <button
+              onClick={() => AddEmployee()}
+              className="px-3 bg-[#089bab] text-white p-1 rounded-xl hover:bg-transparent hover:text-black duration-300 ml-7 border-2 border-[#089bab]"
+            >
+              Add Employee
+            </button>
           </div>
         </div>
       </div>

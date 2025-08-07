@@ -517,7 +517,7 @@ export default function TreatmentPlan() {
             onClick={() => nav("/treatments-plans")}
             className="text-2xl cursor-pointer duration-300 hover:text-[#089bab]"
           />
-          <Title label="Treatment Plan Details" />
+          <Title className="flex-1" label="Treatment Plan Details" />
         </div>
         {/* Main Details Box */}
         <div className="bg-transparent mt-3 p-5 rounded-xl flex flex-col lg:flex-row">

@@ -48,6 +48,11 @@
     // These Two States To Show Confirm Delete Box (Employee and Patient)
     const [confirmDeleteEmployee, setConfirmDeleteEmployee] = useState(false);
     const [confirmDeletePatient, setConfirmDeletePatient] = useState(false);
+    // Pagination
+    const [pagination, setPagination] = useState({
+      current_page: 1,
+      last_page: null,
+    });
 
     // State To Store Ban Duration If its Exist
     const [banDuration, setBanDuration] = useState({
@@ -106,14 +111,19 @@
 
     useEffect(() => {
       axios
-        .get(`${BaseUrl}/patient`, {
+        .get(`${BaseUrl}/patient?page=${pagination.current_page}`, {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
         })
         .then((data) => {
+          console.log(data);
           setPatients(data.data.data.data);
+          setPagination({
+            current_page: data.data.data.current_page,
+            last_page: data.data.data.last_page
+          });
         })
         .catch((error) => {
           console.log(error);
@@ -262,6 +272,26 @@
       }
     }
 
+    function hanldeIncremetPage() {
+      if(pagination.current_page < pagination.last_page) {
+        setPagination((prev) => ({
+          ...prev,
+          current_page: pagination.current_page + 1
+        }))
+        setRefreshFlag((prev) => prev + 1)
+      }
+    }
+
+    function handleDecrementPage() {
+      if(pagination.current_page > 1) {
+        setPagination((prev) => ({
+          ...prev,
+          current_page: pagination.current_page - 1
+        }))
+        setRefreshFlag((prev) => prev + 1)
+      }
+    }
+
     const increment = () =>
       setBanDuration((prev) => ({
         ...prev,
@@ -337,20 +367,12 @@
     ));
 
     const showPatients = patients?.map((patient, index) => (
-      <tr
-        className={`p-3 ${
-          index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""
-        } text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}
-      >
-        <td
-          className={`p-3 ${
-            index === patients.length - 1 ? "rounded-bl-2xl" : ""
-          }`}
-        >
+      <tr className={`p-3 ${index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
+        <td className={`p-3 ${index === patients.length - 1 ? "rounded-bl-2xl" : ""}`}>
           {patient.name}
         </td>
         <td className="p-3">{patient.phone_number}</td>
-        <td className="p-3">+350000</td>
+        <td className={`${patient.balance > 0 ? "text-green-500" : patient.balance < 0 ? "text-red-500" : "text-gray-500"}`}>{patient.balance.toLocaleString()}</td>
         <td className="p-3">
           {patient.is_banned ? (
             <FaBan
@@ -374,13 +396,8 @@
             />
           )}
         </td>
-        <td
-          className={`p-3 ${
-            index === patients.length - 1 ? "rounded-br-2xl" : ""
-          }`}
-        >
-          <MdDelete
-            onClick={(e) => {
+        <td className={`p-3 ${index === patients.length - 1 ? "rounded-br-2xl" : ""}`}>
+          <MdDelete onClick={(e) => {
               e.stopPropagation();
               setPatient((prev) => ({
                 ...prev,
@@ -458,6 +475,28 @@
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Section When Selected Type is Patients */}
+          {selectedType === "Patients" &&
+            <div className="flex justify-center items-center w-full mt-5 text-xl">
+              {/* Increment Page Button */}
+              <button
+              onClick={() => handleDecrementPage()}
+              className="bg-[#089bab] border-2 border-[#089bab] hover:bg-transparent hover:text-black duration-300 text-white w-[25px] h-[25px] rounded-full flex justify-center items-center">
+              <GoDash className="text-sm" />
+              </button>
+              <span className="text-2xl font-semibold mx-5">
+                {pagination.current_page}
+              </span>
+              {/* Decrement Page Button */}
+              <button
+              onClick={() => hanldeIncremetPage()}
+              className="bg-[#089bab] border-2 border-[#089bab] hover:bg-transparent hover:text-black duration-300 text-white w-[25px] h-[25px] rounded-full flex justify-center items-center">
+                <FiPlus className="text-sm" />
+              </button>
+            </div>
+          }
+
         </div>
 
         {/* Show Ban User Confrim Box */}

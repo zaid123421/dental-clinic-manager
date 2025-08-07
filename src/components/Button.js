@@ -6,7 +6,7 @@ export default function Button({
   children,
   onClick
 }) {
-  const baseStyles = "border-[2px] rounded-lg font-semibold duration-[0.3s] px-4 py-[5px]";
+  const baseStyles = "border-[2px] rounded-lg font-semibold duration-[0.3s] px-4 py-[5px] flex items-center justify-center";
   
   const variants = {
     primary: "bg-[#089bab] text-white hover:bg-transparent hover:text-black border-[#089bab]",
@@ -16,7 +16,7 @@ export default function Button({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center ${baseStyles} ${variants[variant]} ${className}`}
+      className={`${baseStyles} ${variants[variant]} ${className}`}
     >
       {icon && iconPosition === "left" && <span>{icon}</span>}
       <span>{children}</span>
