@@ -703,7 +703,7 @@ export default function TreatmentsPlans() {
       {confirmPlanDelete &&
         <Confirm
           img={confirmDelete}
-          label={<>Do You Want Really To Delete <span className="font-bold">{plan.name}</span> With All The Plans Associated With It ?</>}
+          label={<>Do You Want Really To Delete <span className="font-bold">{plan.name}</span> ?</>}
           onCancel={() => handleCancelDelete()}
           onConfirm={() => DeletePlan()}
         />

@@ -501,7 +501,7 @@
         </div>
 
         {/* Show Ban User Confrim Box */}
-        {banBox && (
+        {banBox &&
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
             <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
               {/* Ban State Section (Permanently Or Temporarily) */}
@@ -619,10 +619,10 @@
               </div>
             </div>
           </div>
-        )}
+        }
 
         {/* Show UnBan User Confrim Box */}
-        {confirmUnBanBox &&
+        {confirmUnBanBox && (
           <Confirm
             img={Unban}
             label={<>Do You Want Really To UnBan <span className="font-bold">{employee.name}</span> ?</>}
@@ -630,17 +630,17 @@
             onConfirm={() => UnBan()}
             confirmButtonName = "UnBan"
           />
-        }
+        )}
 
         {/* Show Delete Employee Confirm Box */}
-        {confirmDeleteEmployee &&
+        {confirmDeleteEmployee && (
           <Confirm
             img={confirmDelete}
             label={<>Do You Want Really To Delete <span className="font-bold">{employee.name}</span> ?</>}
             onCancel={() => setConfirmDeleteEmployee(false)}
             onConfirm={() => DeleteEmployee()}
           />
-        }
+        )}
 
         {/* Show Delete Patient Confirm Box */}
         {confirmDeletePatient && (
