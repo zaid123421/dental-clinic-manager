@@ -24,7 +24,9 @@ export default function TreatmentPlan() {
   const [categories, setCategories] = useState([]);
   const [tooth, setTooth] = useState([]);
   const [addStep, setAddStep] = useState(false);
+  const [editStep, setEditStep] = useState(false);
   const [addSubstep, setAddSubstep] = useState(false);
+  const [editSubstep, setEditSubStep] = useState(false);
   const [medications, setMedicationsPlans] = useState(null);
   const [treatmentsNotes, setTreatmentsNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +43,7 @@ export default function TreatmentPlan() {
     treatment_note: null,
   });
 
-  const [substepInfo, setSubstepInfo] = useState({
+  const [substepInfo, setSubstepInfo] = useState({  
     id: null,
     step_id: null,
     name: "",
@@ -193,7 +195,7 @@ export default function TreatmentPlan() {
 
   const showSteps = plan?.steps
     ? plan.steps.map((step, index) => (
-        <div key={index} className="mt-5 md:mt-4">
+        <div key={index} className="mt-8 md:mt-5 md:mt-4">
           <div className="flex items-center flex-col md:flex-row">
             <span className="text-xl font-semibold">
               {step?.queue}. {step?.name}
@@ -216,7 +218,17 @@ export default function TreatmentPlan() {
                 <FaPlus className="text-lg" />
               </div>
               <div
-                onClick={(e) => {}}
+                onClick={() => {
+                  setEditStep(true);
+                  setStepInfo({
+                    id: step.id,
+                    name: step.name,
+                    number: step.queue,
+                    optionality: step.optional,
+                    medication_plan: step.medication_plan?.id || null,
+                    treatment_note: step.treatment_note?.id || null,
+                  });
+                }}
                 className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer"
               >
                 <MdEdit className="text-lg" />
@@ -242,9 +254,9 @@ export default function TreatmentPlan() {
             <span>{step?.treatment_note?.title}</span>
           </div>
           {step?.treatment_substeps && (
-            <div className="ml-8 mt-1 space-y-1 font-semibold">
+            <div className="md:ml-8 mt-1 space-y-1 font-semibold">
               {step.treatment_substeps.map((sub, subIndex) => (
-                <div key={subIndex} className="text-gray-700 flex">
+                <div key={subIndex} className="text-gray-700 flex flex-col md:flex-row items-center">
                   <div>
                     <span className="mr-2">
                       {step?.queue}.{sub?.queue}
@@ -256,7 +268,16 @@ export default function TreatmentPlan() {
                   </div>
                   <div className="flex ml-3">
                     <div
-                      onClick={(e) => {}}
+                      onClick={() =>{
+                        setEditSubStep(true)
+                        console.log(sub)
+                        setSubstepInfo({
+                          id: sub.id,
+                          name: sub.name,
+                          optionality: sub.optional,
+                          number: sub.queue
+                        });
+                      }}
                       className="text-[#089bab] p-1 hover:text-black transition duration-300 cursor-pointer"
                     >
                       <MdEdit className="text-lg" />
@@ -316,7 +337,7 @@ export default function TreatmentPlan() {
     formData.append("treatment_plan_id", PlanId);
     formData.append("name", stepInfo.name);
     formData.append("queue", stepInfo.number !== null ? stepInfo.number : 0);
-    formData.append("optional", stepInfo.optionality === "undefined" ? 0 : 1);
+    formData.append("optional", stepInfo.optionality);
     if (stepInfo.medication_plan !== null && stepInfo.medication_plan !== "undefined") {
       formData.append("medication_plan_id", stepInfo.medication_plan);
     }
@@ -389,7 +410,7 @@ export default function TreatmentPlan() {
       setAddStep(false);
       setModal({
         isOpen: true,
-        message: "The Substep Has Been Added Successfully!",
+        message: "The Substep Has Been Edited Successfully!",
         image: successImage,
       });
       setAddSubstep(false);
@@ -403,6 +424,102 @@ export default function TreatmentPlan() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function EditSubstep() {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("name", substepInfo.name);
+    formData.append(
+      "queue",
+      substepInfo.number !== null ? substepInfo.number : 0
+    );
+    formData.append(
+      "optional",
+      substepInfo.optionality === "undefined" ? 0 : substepInfo.optionality
+    );
+    formData.append("_method", "patch");
+    try {
+      await axios.post(`${BaseUrl}/treatment-substep/${substepInfo.id}`, formData, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRefreshFlag((prev) => prev + 1);
+      setSubstepInfo({
+        step_id: null,
+        name: "",
+        number: null,
+        optionality: 0,
+      });
+      setEditSubStep(false);
+      setModal({
+        isOpen: true,
+        message: "The Substep Has Been Edited Successfully!",
+        image: successImage,
+      });
+      setAddSubstep(false);
+    } catch (err) {
+      console.log(err);
+      setModal({
+        isOpen: true,
+        message: "Something Went Wrong !",
+        image: error,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function UpdateStep() {
+  setIsLoading(true);
+  const formData = new FormData();
+  formData.append("name", stepInfo.name);
+  formData.append("queue", stepInfo.number || 0);
+  formData.append("optional", stepInfo.optionality || 0);
+  
+  if (stepInfo.medication_plan) {
+    formData.append("medication_plan_id", stepInfo.medication_plan);
+  }
+  if (stepInfo.treatment_note) {
+    formData.append("treatment_note_id", stepInfo.treatment_note);
+  }
+  
+  formData.append("_method", "patch");
+
+  try {
+    await axios.post(`${BaseUrl}/treatment-step/${stepInfo.id}`, formData, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setStepInfo({
+      id: null,
+      name: "",
+      number: null,
+      optionality: 0,
+      medication_plan: null,
+      treatment_note: null,
+    })
+    setRefreshFlag(prev => prev + 1);
+    setModal({
+      isOpen: true,
+      message: "The Step Has Been Updated Successfully!",
+      image: successImage,
+    });
+    setEditStep(false);
+  } catch (err) {
+    console.log(err);
+    setModal({
+      isOpen: true,
+      message: "Something Went Wrong!",
+      image: error,
+    });
+  } finally {
+    setIsLoading(false);
+  }
   }
 
   async function DeleteSubstep() {
@@ -745,6 +862,14 @@ export default function TreatmentPlan() {
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
                   setAddStep(false);
+                  setStepInfo({
+                    id: null,
+                    name: "",
+                    number: null,
+                    optionality: 0,
+                    medication_plan: null,
+                    treatment_note: null,
+                  })
                 }}
               >
                 Cancel
@@ -754,6 +879,137 @@ export default function TreatmentPlan() {
                 className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
               >
                 Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editStep && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div className=" mb-5 w-full">
+              <h1 className="font-bold text-2xl text-center">Edit Step</h1>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="pr-4 mb-2">Name</label>
+                <input
+                  name="name"
+                  value={stepInfo.name}
+                  onChange={(e) =>
+                    setStepInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                  autoFocus
+                  placeholder="Add step name"
+                  className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
+                />
+              </div>
+              <div className="flex my-3 font-semibold justify-between items-center">
+                <label className="pr-4">Number</label>
+                <input
+                  placeholder="Add step number"
+                  type="number"
+                  value={stepInfo.number}
+                  onChange={(e) =>
+                    setStepInfo((prev) => ({
+                      ...prev,
+                      number: e.target.value,
+                    }))
+                  }
+                  className="placeholder:text-base w-[150px] bg-gray-200 text-center outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl px-2 py-1"
+                />
+              </div>
+              <div className="flex items-center justify-between items-center">
+                <label className="pr-4 mb-2 font-semibold">
+                  Medications Plan
+                </label>
+                <MedicationDropDown
+                  medications={medications}
+                  value={stepInfo.medication_plan}
+                  onSelect={(med) =>
+                    setStepInfo((prev) => ({
+                      ...prev,
+                      medication_plan: med.id,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between items-center">
+                <label className="pr-4 mb-2 font-semibold">
+                  Treatment Note
+                </label>
+                <TreatmentNoteDropDown
+                  treatmentsNotes={treatmentsNotes}
+                  value={stepInfo.treatment_note}
+                  onSelect={(med) =>
+                    setStepInfo((prev) => ({
+                      ...prev,
+                      treatment_note: med.id,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between font-semibold">
+                <label className="pr-4">Optionality</label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={stepInfo.optionality === 1}
+                      onChange={() =>
+                        setStepInfo((prev) => ({
+                          ...prev,
+                          optionality: prev.optionality === 1 ? 0 : 1,
+                        }))
+                      }
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
+                        stepInfo.optionality === 1
+                          ? "bg-gray-300"
+                          : "bg-[#089bab]"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+                          stepInfo.optionality === 1
+                            ? "translate-x-4"
+                            : "translate-x-0"
+                        }`}
+                      />
+                    </div>
+                    <span className="ml-2 text-sm w-[75px]">
+                      {stepInfo.optionality === 1 ? "Optional" : "Mandatory"}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center w-full mt-5">
+              <button
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+                onClick={() => {
+                  setEditStep(false);
+                  setStepInfo({
+                    id: null,
+                    name: "",
+                    number: null,
+                    optionality: 0,
+                    medication_plan: null,
+                    treatment_note: null,
+                  })
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => UpdateStep()}
+                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                Edit
               </button>
             </div>
           </div>
@@ -847,6 +1103,106 @@ export default function TreatmentPlan() {
                 className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
               >
                 Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editSubstep && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
+          <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
+            <div className=" mb-5 w-full">
+              <h1 className="font-bold text-2xl text-center">Edit Substep</h1>
+              <div className="flex flex-col my-3 font-semibold">
+                <label className="pr-4 mb-2">Name</label>
+                <input
+                  name="name"
+                  value={substepInfo.name}
+                  onChange={(e) =>
+                    setSubstepInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                  autoFocus
+                  placeholder="Add substep name"
+                  className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
+                />
+              </div>
+              <div className="flex my-3 font-semibold justify-between items-center">
+                <label className="pr-4">Number</label>
+                <input
+                  placeholder="Substep number"
+                  type="number"
+                  value={substepInfo.number}
+                  onChange={(e) =>
+                    setSubstepInfo((prev) => ({
+                      ...prev,
+                      number: e.target.value,
+                    }))
+                  }
+                  className="placeholder:text-base w-[150px] bg-gray-200 text-center outline-none border-2 border-transparent focus:border-[#089bab] rounded-xl px-2 py-1"
+                />
+              </div>
+              <div className="flex items-center justify-between font-semibold">
+                <label className="pr-4">Optionality</label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={substepInfo.optionality === 1}
+                      onChange={() =>
+                        setSubstepInfo((prev) => ({
+                          ...prev,
+                          optionality: prev.optionality === 1 ? 0 : 1,
+                        }))
+                      }
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-10 h-6 flex items-center rounded-full p-1 transition ${
+                        substepInfo.optionality === 1
+                          ? "bg-gray-300"
+                          : "bg-[#089bab]"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+                          substepInfo.optionality === 1
+                            ? "translate-x-4"
+                            : "translate-x-0"
+                        }`}
+                      />
+                    </div>
+                    <span className="ml-2 text-sm w-[75px]">
+                      {substepInfo.optionality === 1 ? "Optional" : "Mandatory"}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center w-full mt-5">
+              <button
+                className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
+                onClick={() => {
+                  setEditSubStep(false);
+                  setSubstepInfo({
+                    step_id: null,
+                    id: null,
+                    name: "",
+                    optionality: 0,
+                    number: null,
+                  });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => EditSubstep()}
+                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+              >
+                Edit
               </button>
             </div>
           </div>

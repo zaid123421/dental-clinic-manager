@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { FaEye } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 
-
-export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
+export default function TreatmentNoteDropDown({ treatmentsNotes, value, onSelect }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [showTreatmentNoteDetails, setShowTreatmentNoteDetails] = useState(false);
@@ -14,6 +13,15 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
     duration_value: 1,
     duration_unit: ""
   });
+
+  useEffect(() => {
+    if (value && treatmentsNotes && treatmentsNotes.length > 0) {
+      const found = treatmentsNotes.find((note) => note.id === value);
+      if (found) {
+        setSelected(found);
+      }
+    }
+  }, [value, treatmentsNotes]);
 
   const handleClickOutside = (e) => {
     if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -34,7 +42,6 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
 
   return (
     <div className="relative w-[150px] mb-5" ref={dropdownRef}>
-
       <button
         onClick={() => setOpen(!open)}
         className="min-w-[150px] px-3 py-1 rounded-xl text-left bg-gray-200 flex justify-between items-center"
@@ -72,20 +79,24 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
         </div>
       )}
 
-      {showTreatmentNoteDetails &&
+      {showTreatmentNoteDetails && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
           <div className="relative bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
-          <div
-          onClick={() => {
-            setShowTreatmentNoteDetails(false);
-            setTreatmentNote({
-              name: "",
-              description: "",
-              duration_value: 1,
-              duration_unit: "",
-            });
-          }} className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300">X</div>
-            <div className=" mb-5 w-full font-semibold">
+            <div
+              onClick={() => {
+                setShowTreatmentNoteDetails(false);
+                setTreatmentNote({
+                  name: "",
+                  description: "",
+                  duration_value: 1,
+                  duration_unit: "",
+                });
+              }}
+              className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300"
+            >
+              X
+            </div>
+            <div className="mb-5 w-full font-semibold">
               <h1 className="font-bold text-2xl text-center">{treatmentNote.name} Details</h1>
               <div className="flex justify-between my-3">
                 <label>Name</label>
@@ -93,7 +104,9 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
               </div>
               <div className="flex flex-col">
                 <label>Description</label>
-                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">{treatmentNote.description}</div>
+                <div className="h-[200px] bg-gray-200 rounded-2xl p-5 mt-2 overflow-y-auto text-[#089bab]">
+                  {treatmentNote.description}
+                </div>
               </div>
               <div className="flex mt-3 justify-between">
                 <label>Duration</label>
@@ -105,8 +118,7 @@ export default function TreatmentNoteDropDown({ treatmentsNotes, onSelect }) {
             </div>
           </div>
         </div>
-      }
-
+      )}
     </div>
   );
 }
