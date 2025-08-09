@@ -6,7 +6,7 @@ import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
 import Modal from "../../components/Modal";
 import Loading from "../../components/Loading";
-import ConfirmDelete from "../../components/ConfirmDelete";
+import Confirm from "../../components/Confirm";
 // import icons
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
@@ -18,8 +18,10 @@ import { BaseUrl } from "../../config";
 // import images
 import successImage from "../../assets/success.gif";
 import error from "../../assets/error.gif";
-
+import confirmDelete from "../../assets/deleteConfirm.jpg"
+// react router dom Tool
 import { useNavigate } from "react-router-dom";
+// Cookies
 import Cookies from "universal-cookie";
 
 export default function TreatmentsPlans() {
@@ -431,6 +433,17 @@ export default function TreatmentsPlans() {
     }
   }
 
+  const handleCancelDelete = () => {
+    setConfirmPlanDelete(false);
+    setPlan({
+      id: null,
+      name: "",
+      category: "",
+      cost: null,
+      tooth_status: "",
+    });
+  }
+
   return (
     <>
       <Sidebar />
@@ -678,33 +691,23 @@ export default function TreatmentsPlans() {
         </div>
       )}
 
-      {confirmCategoryDelete && (
-        <ConfirmDelete
-          onClick1={() => {
-            setConfirmCategoryDelete(false);
-          }}
-          onClick2={() => DeleteCategory()}
-          name={category.name}
-          plan={true}
+      {confirmCategoryDelete &&
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{category.name}</span> With All The Plans Associated With It ?</>}
+          onCancel={() => setConfirmCategoryDelete(false)}
+          onConfirm={() => DeleteCategory()}
         />
-      )}
+      }
 
-      {confirmPlanDelete && (
-        <ConfirmDelete
-          onClick1={() => {
-            setConfirmPlanDelete(false);
-            setPlan({
-              id: null,
-              name: "",
-              category: "",
-              cost: null,
-              tooth_status: "",
-            });
-          }}
-          onClick2={() => DeletePlan()}
-          name={plan.name}
+      {confirmPlanDelete &&
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{plan.name}</span> With All The Plans Associated With It ?</>}
+          onCancel={() => handleCancelDelete()}
+          onConfirm={() => DeletePlan()}
         />
-      )}
+      }
 
       {isLoading && <Loading />}
 

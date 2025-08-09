@@ -12,9 +12,10 @@ import error from "../../assets/error.gif";
 import TreatmentNoteDropDown from "../../components/TreatmentNoteDropDown";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { FaPlus } from "react-icons/fa6";
-import ConfirmDelete from "../../components/ConfirmDelete";
+import Confirm from "../../components/Confirm";
 import { IoIosArrowBack } from "react-icons/io";
 import Cookies from "universal-cookie";
+import confirmDelete from "../../assets/deleteConfirm.jpg"
 
 export default function TreatmentPlan() {
   // useState
@@ -292,14 +293,31 @@ export default function TreatmentPlan() {
     );
   }
 
+  const handleCancelStepDelete = () => {
+    setConfirmDeleteStep(false);
+    setStepInfo({
+      id: null,
+      name: "",
+    });
+  }
+
+  const handleCancelSubstepDelete = () => {
+    setConfirmDeleteSubstep(false);
+    setSubstepInfo({
+      id: null,
+      name: "",
+      optionality: 0,
+    });
+  }
+
   async function Add() {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("treatment_plan_id", PlanId);
     formData.append("name", stepInfo.name);
     formData.append("queue", stepInfo.number !== null ? stepInfo.number : 0);
-    formData.append("optional", stepInfo.optionality);
-    if (stepInfo.medication_plan !== null) {
+    formData.append("optional", stepInfo.optionality === "undefined" ? 0 : 1);
+    if (stepInfo.medication_plan !== null && stepInfo.medication_plan !== "undefined") {
       formData.append("medication_plan_id", stepInfo.medication_plan);
     }
     if (stepInfo.treatment_note !== null) {
@@ -836,33 +854,22 @@ export default function TreatmentPlan() {
       )}
 
       {confirmDeleteStep && (
-        <ConfirmDelete
-          onClick1={() => {
-            setConfirmDeleteStep(false);
-            setStepInfo({
-              id: null,
-              name: "",
-            });
-          }}
-          onClick2={() => DeleteStep()}
-          name={stepInfo.name}
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{stepInfo.name}</span> ?</>}
+          onCancel={() => handleCancelStepDelete()}
+          onConfirm={() => DeleteStep()}
         />
       )}
 
-      {confirmDeleteSubstep && (
-        <ConfirmDelete
-          onClick1={() => {
-            setConfirmDeleteStep(false);
-            setSubstepInfo({
-              id: null,
-              name: "",
-              optionality: 0,
-            });
-          }}
-          onClick2={() => DeleteSubstep()}
-          name={substepInfo.name}
+      {confirmDeleteSubstep &&
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{substepInfo.name}</span> ?</>}
+          onCancel={() => handleCancelSubstepDelete()}
+          onConfirm={() => DeleteSubstep()}
         />
-      )}
+      }
 
       {isLoading && <Loading />}
 

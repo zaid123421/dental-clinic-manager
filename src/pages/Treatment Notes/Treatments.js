@@ -6,7 +6,7 @@ import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
-import ConfirmDelete from "../../components/ConfirmDelete";
+import Confirm from "../../components/Confirm";
 import { useEffect, useRef, useState } from "react";
 // import icons
 import { IoIosSearch } from "react-icons/io";
@@ -18,6 +18,9 @@ import axios from "axios";
 import { BaseUrl } from "../../config";
 // import images
 import successImage from "../../assets/success.gif";
+import confirmDelete from "../../assets/deleteConfirm.jpg"
+import error from "../../assets/error.gif";
+
 import Cookies from "universal-cookie";
 
 export default function Treatments() {
@@ -27,7 +30,7 @@ export default function Treatments() {
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirm, setConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [id, setId] = useState(null);
   const [modal, setModal] = useState({
@@ -35,12 +38,14 @@ export default function Treatments() {
     message: "",
     image: "",
   });
+
   const [treatmentNote, setTreatmentNote] = useState({
     name: "",
     description: "",
     duration_value: 1,
     duration_unit: "",
   });
+
   const [oldTreatmentNote, setOldTreatmentNote] = useState({
     name: "",
     description: "",
@@ -73,7 +78,7 @@ export default function Treatments() {
   }, [count]);
 
   useEffect(() => {
-    if (confirmDelete || addBox || editBox || showBox) {
+    if (confirm || addBox || editBox || showBox) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -81,7 +86,7 @@ export default function Treatments() {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [confirmDelete, addBox, editBox, showBox]);
+  }, [confirm, addBox, editBox, showBox]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -171,7 +176,7 @@ export default function Treatments() {
     setTreatmentNote((prev) => ({
       ...prev,
       duration_value: treatmentNote.duration_value + 1,
-    }));
+  }));
 
   const decrement = () =>
     setTreatmentNote((prev) => ({
@@ -180,7 +185,15 @@ export default function Treatments() {
         treatmentNote.duration_value > 1
           ? treatmentNote.duration_value - 1
           : treatmentNote.duration_value,
+  }));
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(false);
+    setTreatmentNote((prev) => ({
+      ...prev,
+      name: "",
     }));
+  }
 
   async function handleDelete() {
     setIsLoading(true);
@@ -213,7 +226,7 @@ export default function Treatments() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -252,7 +265,7 @@ export default function Treatments() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -294,7 +307,7 @@ export default function Treatments() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -586,17 +599,12 @@ export default function Treatments() {
         </div>
       )}
 
-      {confirmDelete && (
-        <ConfirmDelete
-          name={treatmentNote.name}
-          onClick1={() => {
-            setConfirmDelete(false);
-            setTreatmentNote((prev) => ({
-              ...prev,
-              name: "",
-            }));
-          }}
-          onClick2={() => handleDelete()}
+      {confirm && (
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{treatmentNote.name}</span> ?</>}
+          onCancel={() => handleCancelDelete()}
+          onConfirm={() => handleDelete()}
         />
       )}
 

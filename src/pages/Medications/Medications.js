@@ -6,6 +6,7 @@ import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import PlusButton from "../../components/PlusButton";
 import Title from "../../components/Title";
+import Confirm from "../../components/Confirm";
 // import icons
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
@@ -13,9 +14,9 @@ import { MdEdit, MdDelete } from "react-icons/md";
 // import images
 import successImage from "../../assets/success.gif";
 import error from "../../assets/error.gif";
+import confirmDelete from "../../assets/deleteConfirm.jpg"
 // import style file
 import "../../index.css";
-import ConfirmDelete from "../../components/ConfirmDelete";
 //import hooks
 import { useEffect, useRef, useState } from "react";
 // import backend configuration
@@ -27,7 +28,7 @@ import Cookies from "universal-cookie";
 export default function Medications() {
   // States
   const [cards, setCards] = useState([]);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirm, setConfirmDelete] = useState(false);
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
@@ -80,7 +81,7 @@ export default function Medications() {
   }, [count]);
 
   useEffect(() => {
-    if (confirmDelete || addBox || editBox) {
+    if (confirm || addBox || editBox) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -88,7 +89,7 @@ export default function Medications() {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [confirmDelete, addBox, editBox]);
+  }, [confirm, addBox, editBox]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -196,6 +197,14 @@ export default function Medications() {
       e.dataTransfer.clearData();
     }
   };
+
+  const handlCancelDelete = () => {
+    setConfirmDelete(false);
+    setMedicationForm((prev) => ({
+      ...prev,
+      name: "",
+    }));
+  }
 
   async function submit() {
     setIsLoading(true);
@@ -584,20 +593,14 @@ export default function Medications() {
         </div>
       )}
 
-      {confirmDelete && (
-        <ConfirmDelete
-          onClick1={() => {
-            setConfirmDelete(false);
-            setMedicationForm((prev) => ({
-              ...prev,
-              name: "",
-            }));
-          }}
-          onClick2={() => handleDelete()}
-          name={medicationForm.name}
-          medication={true}
+      {confirm &&
+        <Confirm
+          img={confirmDelete}
+          onCancel={() => handlCancelDelete()}
+          onConfirm={() => handleDelete()}
+          label={<>Do You Want Really To Delete <span className="font-bold">{medicationForm.name}</span> With All Medication Plans Associated With It ?</>}
         />
-      )}
+      }
 
       {isLoading && <Loading />}
 

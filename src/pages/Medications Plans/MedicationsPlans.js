@@ -6,7 +6,7 @@ import Sidebar from "../../components/Sidebar";
 import Title from "../../components/Title";
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
-import ConfirmDelete from "../../components/ConfirmDelete";
+import Confirm from "../../components/Confirm";
 // import icons
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
@@ -15,6 +15,8 @@ import { MdEdit, MdDelete } from "react-icons/md";
 import { useEffect, useRef, useState } from "react";
 // import images
 import successImage from "../../assets/success.gif";
+import confirmDelete from "../../assets/deleteConfirm.jpg"
+import error from "../../assets/error.gif";
 // import axios library
 import axios from "axios";
 // import backend server configurations
@@ -29,7 +31,7 @@ export default function MedicationsPlans() {
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirm, setConfirmDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [modal, setModal] = useState({
@@ -89,7 +91,7 @@ export default function MedicationsPlans() {
   }, []);
 
   useEffect(() => {
-    if (confirmDelete || addBox || editBox || showBox) {
+    if (confirm || addBox || editBox || showBox) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -97,7 +99,7 @@ export default function MedicationsPlans() {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [confirmDelete, addBox, editBox, showBox]);
+  }, [confirm, addBox, editBox, showBox]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -134,7 +136,7 @@ export default function MedicationsPlans() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -175,7 +177,7 @@ export default function MedicationsPlans() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -221,7 +223,7 @@ export default function MedicationsPlans() {
       setModal({
         isOpen: true,
         message: "Something Went Wrong !",
-        image: successImage,
+        image: error,
       });
     } finally {
       setIsLoading(false);
@@ -309,7 +311,7 @@ export default function MedicationsPlans() {
     setMedicationPlan((prev) => ({
       ...prev,
       duration_value: medicationPlan.duration_value + 1,
-    }));
+  }));
 
   const decrement = () =>
     setMedicationPlan((prev) => ({
@@ -318,7 +320,15 @@ export default function MedicationsPlans() {
         medicationPlan.duration_value > 1
           ? medicationPlan.duration_value - 1
           : medicationPlan.duration_value,
+  }));
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(false);
+    setMedicationPlan((prev) => ({
+      ...prev,
+      name: "",
     }));
+  }
 
   return (
     <>
@@ -629,19 +639,14 @@ export default function MedicationsPlans() {
         </div>
       )}
 
-      {confirmDelete && (
-        <ConfirmDelete
-          name={medicationPlan.name}
-          onClick1={() => {
-            setConfirmDelete(false);
-            setMedicationPlan((prev) => ({
-              ...prev,
-              name: "",
-            }));
-          }}
-          onClick2={() => handleDelete()}
+      {confirm &&
+        <Confirm
+          img={confirmDelete}
+          label={<>Do You Want Really To Delete <span className="font-bold">{medicationPlan.name}</span> ?</>}
+          onCancel={() => handleCancelDelete()}
+          onConfirm={() => handleDelete()}
         />
-      )}
+      }
 
       {isLoading && <Loading />}
 

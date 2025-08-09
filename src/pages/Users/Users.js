@@ -4,7 +4,7 @@
   import PlusButton from "../../components/PlusButton";
   import Sidebar from "../../components/Sidebar";
   import Title from "../../components/Title";
-  import ConfirmDelete from "../../components/ConfirmDelete";
+  import Confirm from "../../components/Confirm";
   import Loading from "../../components/Loading";
   import Modal from "../../components/Modal";
   // Icons
@@ -16,6 +16,7 @@
   // Images
   import successImage from "../../assets/success.gif";
   import error from "../../assets/error.gif";
+  import confirmDelete from "../../assets/deleteConfirm.jpg"
   import Unban from "../../assets/UnBan.jpg";
   // Hooks
   import { useEffect, useRef, useState } from "react";
@@ -321,7 +322,7 @@
           {employee.name}
         </td>
         <td className="p-3">{employee.phone_number}</td>
-        <td className="p-3">+350000</td>
+        {/* <td className="p-3">+350000</td> */}
         <td className="p-3">
           {employee.is_banned ? (
             <FaBan
@@ -466,7 +467,7 @@
               <thead className="font-bold bg-gray-300">
                 <th className="p-3 rounded-tl-2xl">Name</th>
                 <th className="p-3">Phone Number</th>
-                <th className="p-3">Payments</th>
+                {selectedType === "Patients" && <th className="p-3">Payments</th>}
                 <th className="p-3">Banned</th>
                 <th className="py-3 rounded-tr-2xl ">Delete</th>
               </thead>
@@ -621,50 +622,33 @@
         )}
 
         {/* Show UnBan User Confrim Box */}
-        {confirmUnBanBox && (
-          <div className="font-semibold fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2">
-            <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[400px] overflow-hidden">
-              <img alt="confirm_box" src={Unban} className="w-[250px]" />
-              <p className="my-5 text-center">
-                Do You Really Want To UnBan The User ?
-              </p>
-              <div className="flex justify-center w-full">
-                <button
-                  onClick={() => setConfirmUnBanBox(false)}
-                  className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => UnBan()}
-                  className="w-[85px] bg-[#DD1015] border-2 border-[#DD1015] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
-                >
-                  UnBan
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {confirmUnBanBox &&
+          <Confirm
+            img={Unban}
+            label={<>Do You Want Really To UnBan <span className="font-bold">{employee.name}</span> ?</>}
+            onCancel={() => setConfirmUnBanBox(false)}
+            onConfirm={() => UnBan()}
+            confirmButtonName = "UnBan"
+          />
+        }
 
         {/* Show Delete Employee Confirm Box */}
-        {confirmDeleteEmployee && (
-          <ConfirmDelete
-            onClick1={() => {
-              setConfirmDeleteEmployee(false);
-            }}
-            onClick2={() => DeleteEmployee()}
-            name={employee.name}
+        {confirmDeleteEmployee &&
+          <Confirm
+            img={confirmDelete}
+            label={<>Do You Want Really To Delete <span className="font-bold">{employee.name}</span> ?</>}
+            onCancel={() => setConfirmDeleteEmployee(false)}
+            onConfirm={() => DeleteEmployee()}
           />
-        )}
+        }
 
         {/* Show Delete Patient Confirm Box */}
         {confirmDeletePatient && (
-          <ConfirmDelete
-            onClick1={() => {
-              setConfirmDeletePatient(false);
-            }}
-            onClick2={() => DeletePatient()}
-            name={patient.name}
+          <Confirm
+            img={confirmDelete}
+            label={<>Do You Want Really To Delete <span className="font-bold">{patient.name}</span> ?</>}
+            onCancel={() => setConfirmDeletePatient(false)}
+            onConfirm={() => DeletePatient()}
           />
         )}
 

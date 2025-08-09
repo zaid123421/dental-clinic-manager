@@ -127,7 +127,7 @@ export default function AddEmployee() {
           <div className="flex flex-col lg:flex-row gap-5 font-semibold w-full">
 
             {/* First Informations Section */}
-            <div className="flex flex-col w-1/3">
+            <div className="flex flex-col w-full lg:w-1/3">
               <label className="mb-2">Name</label>
               <input
                 value={employee.name}
@@ -170,7 +170,7 @@ export default function AddEmployee() {
             </div>
 
             {/* Second Informations Section */}
-            <div className="flex flex-col w-1/3">
+            <div className="flex flex-col w-full lg:w-1/3">
               <label className="mb-2">Birthdate</label>
               <input
                 type="date"
@@ -214,7 +214,7 @@ export default function AddEmployee() {
             </div>
 
             {/* Third Informations Section */}
-            <div className="flex flex-col w-1/3">
+            <div className="flex flex-col w-full lg:w-1/3">
               <label className="mb-2">Address</label>
               <input
                 value={employee.address}
