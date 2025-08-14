@@ -310,6 +310,7 @@
 
     const showEmployees = employees?.map((employee, index) => (
       <tr
+      onClick={() => nav(`/show-employee?employeeId=${employee.id}`)}
         className={`p-3 ${
           index !== employees.length - 1 ? "border-b-[1px] border-b-gray-300" : ""
         } text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}
@@ -368,7 +369,7 @@
     ));
 
     const showPatients = patients?.map((patient, index) => (
-      <tr className={`p-3 ${index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
+      <tr onClick={() => nav(`/show-patient?patientId=${patient.id}`)} className={`p-3 ${index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
         <td className={`p-3 ${index === patients.length - 1 ? "rounded-bl-2xl" : ""}`}>
           {patient.name}
         </td>
@@ -424,12 +425,17 @@
               <>
                 <Button
                   onClick={() => nav(`/add-employee`)}
-                  className="md:mr-5 min-w-[250px] hidden md:flex"
+                  className="hidden md:flex"
                   variant="primary"
                   icon={<FiPlus className="mr-3 text-2xl" />}
                   children="Add Employee"
                 />
-                <PlusButton onClick={() => nav(`/add-employee`)} />
+                <Button
+                  onClick={() => nav(`/add-employee`)}
+                  className="flex md:hidden"
+                  variant="plus"
+                  icon={<FiPlus className="text-2xl" />}
+                />
               </>
             ) : (
               ""

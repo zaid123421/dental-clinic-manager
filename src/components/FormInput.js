@@ -21,7 +21,7 @@ export default function FormInput({
         <input
           autoFocus={autoFocus}
           className={`
-            px-4 py-[5px] border-transparent border-[2px] outline-none rounded-lg focus:border-[#089bab]
+            px-4 py-1 border-transparent border-[2px] outline-none rounded-lg focus:border-[#089bab]
             ${icon ? 'pl-10' : ''}
             ${className}
           `}

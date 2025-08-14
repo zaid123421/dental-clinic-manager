@@ -59,54 +59,35 @@ export default function TreatmentsPlans() {
     image: "",
   });
 
+  // Cookies
+  const cookie = new Cookies();
+  const token = cookie.get("token");
+
   // useEffect
   useEffect(() => {
-    axios
-      .get(`${BaseUrl}/category`, {
-        headers: {
+    const fetchAll = async () => {
+      try {
+        const headers = {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setCategories(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [refreshFlag]);
+        };
 
-  useEffect(() => {
-    axios
-      .get(`${BaseUrl}/treatment-plan`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setPlans(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [refreshFlag]);
+        const [categoriesRes, plansRes, toothRes] = await Promise.all([
+          axios.get(`${BaseUrl}/category`, { headers }),
+          axios.get(`${BaseUrl}/treatment-plan`, { headers }),
+          axios.get(`${BaseUrl}/tooth-status`, { headers }),
+        ]);
 
-  useEffect(() => {
-    axios
-      .get(`${BaseUrl}/tooth-status`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setTooth(data.data.data);
-      })
-      .catch((error) => {
+        setCategories(categoriesRes.data.data);
+        setPlans(plansRes.data.data);
+        setTooth(toothRes.data.data);
+      } catch (error) {
         console.log(error);
-      });
-  }, [refreshFlag]);
+      }
+  };
+
+    fetchAll();
+  }, [refreshFlag, token]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -142,10 +123,6 @@ export default function TreatmentsPlans() {
 
   // useNavigate
   const nav = useNavigate();
-
-  // Cookies
-  const cookie = new Cookies();
-  const token = cookie.get("token");
 
   // Destructure
   const allCategories = [{ name: "All" }, ...categories];
@@ -230,14 +207,14 @@ export default function TreatmentsPlans() {
         <div
           onClick={(e) => {
             e.stopPropagation();
-            setConfirmPlanDelete(true);
             setPlan({
               id: plan.id,
               name: plan.name,
-              category: plan.category.name,
+              category: plan.category?.name,
               cost: plan.cost,
-              tooth_status: plan.tooth_status.name,
+              tooth_status: plan.tooth_status?.name,
             });
+            setConfirmPlanDelete(true);
           }}
           className="bg-red-500 p-1 text-white rounded-lg md:rounded-xl border-2 border-red-500 hover:bg-transparent hover:text-black transition duration-300 cursor-pointer"
         >
@@ -691,23 +668,23 @@ export default function TreatmentsPlans() {
         </div>
       )}
 
-      {confirmCategoryDelete &&
+      {confirmCategoryDelete &&(
         <Confirm
           img={confirmDelete}
           label={<>Do You Want Really To Delete <span className="font-bold">{category.name}</span> With All The Plans Associated With It ?</>}
           onCancel={() => setConfirmCategoryDelete(false)}
           onConfirm={() => DeleteCategory()}
         />
-      }
+      )}
 
-      {confirmPlanDelete &&
+      {confirmPlanDelete &&(
         <Confirm
           img={confirmDelete}
           label={<>Do You Want Really To Delete <span className="font-bold">{plan.name}</span> ?</>}
           onCancel={() => handleCancelDelete()}
           onConfirm={() => DeletePlan()}
         />
-      }
+      )}
 
       {isLoading && <Loading />}
 

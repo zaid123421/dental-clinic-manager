@@ -62,6 +62,7 @@ export default function TreatmentPlan() {
   const params = new URLSearchParams(location.search);
   const PlanId = params.get("id");
 
+  // useNavigate
   const nav = useNavigate();
 
   // Cookies

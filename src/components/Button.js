@@ -6,11 +6,12 @@ export default function Button({
   children,
   onClick
 }) {
-  const baseStyles = "border-[2px] rounded-lg font-semibold duration-[0.3s] px-4 py-[5px] flex items-center justify-center";
+  const baseStyles = "flex items-center justify-center duration-300 border-2 rounded-xl mr-3";
   
   const variants = {
-    primary: "bg-[#089bab] text-white hover:bg-transparent hover:text-black border-[#089bab]",
-    secondary: "bg-gray-300 text-black hover:bg-gray-400",
+    primary: "bg-[#089bab] text-white hover:bg-transparent hover:text-black border-[#089bab] w-[300px] py-1 ",
+    secondary: "bg-gray-300 text-black hover:bg-gray-400 w-full",
+    plus: "bg-[#089bab] hover:bg-[#047986] duration-300 text-white p-3 rounded-2xl p-2 fixed bottom-[25px] right-[25px] md:hidden",
   };
 
   return (

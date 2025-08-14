@@ -326,12 +326,17 @@ export default function Medications() {
         <div className="mt-3 flex items-center">
           <Button
             onClick={() => setAddBox(true)}
-            className="md:mr-5 min-w-[250px] hidden md:flex"
+            className="hidden md:flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Medication"
           />
-          <PlusButton onClick={() => setAddBox(true)} />
+          <Button
+            onClick={() => setAddBox(true)}
+            className="mr-3 flex md:hidden"
+            variant="plus"
+            icon={<FiPlus className="text-2xl" />}
+          />
           <FormInput
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
