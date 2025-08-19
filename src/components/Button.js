@@ -11,7 +11,7 @@ export default function Button({
   const variants = {
     primary: "bg-[#089bab] text-white hover:bg-transparent hover:text-black border-[#089bab] w-[300px] py-1 ",
     secondary: "bg-gray-300 text-black hover:bg-gray-400 w-full",
-    plus: "bg-[#089bab] hover:bg-[#047986] duration-300 text-white p-3 rounded-2xl p-2 fixed bottom-[25px] right-[25px] md:hidden",
+    plus: "bg-[#089bab] hover:bg-[#047986] duration-300 text-white p-3 rounded-2xl p-2 fixed bottom-[25px] right-[25px] md:hidden border-none",
   };
 
   return (

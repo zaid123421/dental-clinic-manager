@@ -3,7 +3,7 @@ import Link from "./Link";
 import Loading from "./Loading";
 // import images
 import avatar from "../assets/avatar.webp";
-import UnBan from "../assets/UnBan.jpg";
+import logout from "../assets/logout.jpg"
 // import icons
 import { FaBookMedical, FaNotesMedical, FaArrowRight, FaUsers } from "react-icons/fa";
 import { RiLogoutBoxRLine, RiMedicineBottleFill } from "react-icons/ri";
@@ -100,11 +100,11 @@ export default function Sidebar() {
       {/* Show Logout Confirm Box */}
       {logutConfirmBox && 
         <Confirm
-          img={UnBan}
+          img={logout}
           label="Do You Want Really To Logout ?"
           onCancel={() => setLogoutConfirmBox(false)}
           onConfirm={() => handleLogout()}
-          confirmButtonName="Unban"
+          confirmButtonName="Logout"
         />
       }
 
