@@ -20,13 +20,13 @@ import { BaseUrl } from "../../config";
 import successImage from "../../assets/success.gif";
 import confirmDelete from "../../assets/deleteConfirm.jpg"
 import error from "../../assets/error.gif";
-
+// Cookies
 import Cookies from "universal-cookie";
 
 export default function Treatments() {
   // States
   const [cards, setCards] = useState([]);
-  const [count, setCount] = useState(0);
+  const [refreshFlag, setRefreshFlag] = useState(0);
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
@@ -43,15 +43,18 @@ export default function Treatments() {
     name: "",
     description: "",
     duration_value: 1,
-    duration_unit: "",
+    duration_unit: "days",
   });
 
   const [oldTreatmentNote, setOldTreatmentNote] = useState({
     name: "",
     description: "",
     duration_value: 1,
-    duration_unit: "",
+    duration_unit: "days",
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [nameError, setNameError] = useState("");
 
   // useRef
   const treatmentNoteId = useRef(null);
@@ -75,7 +78,7 @@ export default function Treatments() {
       .catch((error) => {
         console.log(error);
       });
-  }, [count]);
+  }, [refreshFlag]);
 
   useEffect(() => {
     if (confirm || addBox || editBox || showBox) {
@@ -97,8 +100,14 @@ export default function Treatments() {
     }
   }, [modal.isOpen]);
 
+  const filteredCards = cards.filter((card) => {
+    const title = (card?.title || "").toString().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
+    return title.startsWith(q);
+  });
+
   // Mapping
-  const showCards = cards.map((card, index) => (
+  const showCards = filteredCards.map((card, index) => (
     <div
       key={index}
       onClick={() => {
@@ -212,7 +221,7 @@ export default function Treatments() {
         name: "",
       }));
       setConfirmDelete(false);
-      setCount((prev) => prev + 1);
+      setRefreshFlag((prev) => prev + 1);
       setModal({
         isOpen: true,
         message: "The Treatment Note Has Been Deleted Successfully !",
@@ -235,11 +244,13 @@ export default function Treatments() {
 
   async function Submit() {
     setIsLoading(true);
+    setNameError("");
     const formData = new FormData();
     formData.append("title", treatmentNote.name);
     formData.append("text", treatmentNote.description);
     formData.append("duration_value", treatmentNote.duration_value);
     formData.append("duration_unit", treatmentNote.duration_unit);
+
     try {
       await axios.post(`${BaseUrl}/treatment-note`, formData, {
         headers: {
@@ -247,26 +258,30 @@ export default function Treatments() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setNameError("");
       setAddBox(false);
-      setCount((prev) => prev + 1);
+      setRefreshFlag((prev) => prev + 1);
       setTreatmentNote({
         name: "",
         description: "",
         duration_value: 1,
-        duration_unit: "",
+        duration_unit: "days",
       });
       setModal({
         isOpen: true,
-        message: "The Tretment Note Has Been Added Successfully !",
+        message: "The Treatment Note Has Been Added Successfully !",
         image: successImage,
       });
     } catch (err) {
-      console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.title) {
+        setNameError("The name has been already been taken"); 
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -289,13 +304,14 @@ export default function Treatments() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setNameError("");
       setEditBox(false);
-      setCount((prev) => prev + 1);
+      setRefreshFlag((prev) => prev + 1);
       setTreatmentNote({
         name: "",
         description: "",
         duration_value: 1,
-        duration_unit: "",
+        duration_unit: "days",
       });
       setModal({
         isOpen: true,
@@ -304,11 +320,15 @@ export default function Treatments() {
       });
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.title) {
+        setNameError("The name has been already been taken"); 
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -330,6 +350,8 @@ export default function Treatments() {
           />
           <PlusButton onClick={() => setAddBox(true)} />
           <FormInput
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
             className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
@@ -348,7 +370,7 @@ export default function Treatments() {
                 Add Treatment Note
               </h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={treatmentNote.name}
@@ -362,9 +384,12 @@ export default function Treatments() {
                   placeholder="Add treatment note name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
               <div className="flex flex-col font-semibold">
-                <label className="px-4 mb-2">Description</label>
+                <label className="px-4 mb-2">Description <span className="text-red-500 text-sm ml-1">required</span></label>
                 <textarea
                   name="description"
                   value={treatmentNote.description}
@@ -382,8 +407,14 @@ export default function Treatments() {
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
                 <div className="flex items-center mb-[10px]">
                   <button
+                    disabled={treatmentNote.duration_value === 1}
                     onClick={decrement}
-                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
+                    className={`border-2 w-[25px] h-[25px] flex items-center justify-center rounded-full duration-300 
+                      ${
+                        treatmentNote.duration_value === 1
+                          ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                          : "bg-[#089bab] border-transparent text-white hover:bg-white hover:text-black hover:border-[#089bab]"
+                      }`}
                   >
                     −
                   </button>
@@ -426,11 +457,12 @@ export default function Treatments() {
               <button
                 onClick={() => {
                   setAddBox(false);
+                  setNameError("");
                   setTreatmentNote({
                     name: "",
                     description: "",
                     duration_value: 1,
-                    duration_unit: "",
+                    duration_unit: "days",
                   });
                 }}
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
@@ -439,7 +471,13 @@ export default function Treatments() {
               </button>
               <button
                 onClick={Submit}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!treatmentNote.name || !treatmentNote.description}
+                className={`w-[85px] border-2 p-1 rounded-xl ml-7 duration-300 
+                  ${
+                    !treatmentNote.name || !treatmentNote.description
+                      ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Add
               </button>
@@ -456,7 +494,7 @@ export default function Treatments() {
                 Edit Treatment Note
               </h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={treatmentNote.name}
@@ -470,9 +508,12 @@ export default function Treatments() {
                   placeholder="Add treatment note name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
               <div className="flex flex-col font-semibold">
-                <label className="px-4 mb-2">Description</label>
+                <label className="px-4 mb-2">Description <span className="text-red-500 text-sm ml-1">required</span></label>
                 <textarea
                   name="description"
                   value={treatmentNote.description}
@@ -534,11 +575,12 @@ export default function Treatments() {
               <button
                 onClick={() => {
                   setEditBox(false);
+                  setNameError("");
                   setTreatmentNote({
                     name: "",
                     description: "",
                     duration_value: 1,
-                    duration_unit: "",
+                    duration_unit: "days",
                   });
                 }}
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
@@ -547,7 +589,27 @@ export default function Treatments() {
               </button>
               <button
                 onClick={Edit}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={
+                  (
+                    treatmentNote.name === oldTreatmentNote.name &&
+                    treatmentNote.description === oldTreatmentNote.description &&
+                    treatmentNote.duration_value === oldTreatmentNote.duration_value &&
+                    treatmentNote.duration_unit === oldTreatmentNote.duration_unit
+                  )
+                  || !treatmentNote.name
+                  || !treatmentNote.description
+                }
+                className={`w-[85px] border-2 p-1 rounded-xl ml-7 duration-300
+                  ${
+                    (
+                      treatmentNote.name === oldTreatmentNote.name &&
+                      treatmentNote.description === oldTreatmentNote.description &&
+                      treatmentNote.duration_value === oldTreatmentNote.duration_value &&
+                      treatmentNote.duration_unit === oldTreatmentNote.duration_unit
+                    ) || !treatmentNote.name || !treatmentNote.description
+                      ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Edit
               </button>
@@ -566,7 +628,7 @@ export default function Treatments() {
                   name: "",
                   description: "",
                   duration_value: 1,
-                  duration_unit: "",
+                  duration_unit: "days",
                 });
               }}
               className="absolute top-[15px] right-[15px] hover:text-[#089bab] font-bold cursor-pointer duration-300"
