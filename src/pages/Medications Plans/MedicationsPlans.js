@@ -51,6 +51,17 @@ export default function MedicationsPlans() {
     image: null,
   });
 
+  const [oldMedicationPlan, setOldMedicationPlan] = useState({
+    id: null,
+    medicationId: null,
+    name: "",
+    dose: "",
+    duration_value: 1,
+    duration_unit: "days",
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Cookies
   const cookie = new Cookies();
   const token = cookie.get("token");
@@ -187,10 +198,18 @@ export default function MedicationsPlans() {
   async function Edit() {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("medication_id", medicationPlan.medicationId);
-    formData.append("dose", medicationPlan.dose);
-    formData.append("duration_value", medicationPlan.duration_value);
-    formData.append("duration_unit", medicationPlan.duration_unit);
+    if (medicationPlan.medicationId !== oldMedicationPlan.medicationId) {
+      formData.append("medication_id", medicationPlan.medicationId);
+    }
+    if (medicationPlan.dose !== oldMedicationPlan.dose) {
+      formData.append("dose", medicationPlan.dose);
+    }
+    if (medicationPlan.duration_value !== oldMedicationPlan.duration_value) {
+      formData.append("duration_value", medicationPlan.duration_value);
+    }
+    if (medicationPlan.duration_unit !== oldMedicationPlan.duration_unit) {
+      formData.append("duration_unit", medicationPlan.duration_unit);
+    }
     formData.append("_method", "patch");
     try {
       await axios.post(
@@ -230,8 +249,14 @@ export default function MedicationsPlans() {
     }
   }
 
+  const filteredCards = cards?.filter((card) => {
+    const title = (card.medication?.name || "").toString().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
+    return title.startsWith(q);
+  });
+
   // Mapping
-  const showCards = cards.map((card, index) => (
+  const showCards = filteredCards.map((card, index) => (
     <div
       key={index}
       onClick={() => {
@@ -248,7 +273,7 @@ export default function MedicationsPlans() {
       className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
     >
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
-        <img
+        <imgDose
           className="rounded-md w-full h-full"
           src={`${ImageUrl}${card.medication.image}`}
           alt="medication_image"
@@ -261,7 +286,7 @@ export default function MedicationsPlans() {
         </div>
         <div className="flex justify-between my-2">
           <label className="font-bold mr-2">Dose:</label>
-          <label className="text-right">{card.dose}</label>
+          <label className="text-right">{card.dose || "No Informations"}</label>
         </div>
         <div className="flex justify-between">
           <label className="font-bold mr-2">Duration:</label>
@@ -275,14 +300,16 @@ export default function MedicationsPlans() {
           onClick={(e) => {
             setEditBox(true);
             e.stopPropagation();
-            setMedicationPlan({
+            const selectedPlan = {
               id: card.id,
               medicationId: card.medication.id,
               name: card.medication.name,
               dose: card.dose,
               duration_value: card.duration_value,
               duration_unit: card.duration_unit,
-            });
+            };
+            setMedicationPlan(selectedPlan);
+            setOldMedicationPlan(selectedPlan);
           }}
           className="bg-[#089bab] p-1 mr-2 text-white rounded-lg md:rounded-xl border-2 border-[#089bab] hover:bg-transparent hover:text-black transition duration-300 cursor-pointer"
         >
@@ -346,6 +373,8 @@ export default function MedicationsPlans() {
           />
           <PlusButton onClick={() => setAddBox(true)} />
           <FormInput
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
             className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
@@ -363,8 +392,8 @@ export default function MedicationsPlans() {
               <h1 className="font-bold text-2xl text-center">
                 Add Treatment Note
               </h1>
-              <div className="flex flex items-center my-3 font-semibold">
-                <label className="px-4 mb-2">Medication Name</label>
+              <div className="flex items-center my-3 font-semibold">
+                <label className="px-4 mb-1">Medication Name <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <select
                   value={medicationPlan.medicationId}
                   onChange={(e) =>
@@ -373,7 +402,7 @@ export default function MedicationsPlans() {
                       medicationId: e.target.value,
                     }))
                   }
-                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="w-[175px] mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
                   <option>None</option>
                   {showOptions}
@@ -398,12 +427,17 @@ export default function MedicationsPlans() {
               <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
                 <div className="flex items-center mb-[10px]">
-                  <button
-                    onClick={decrement}
-                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
-                  >
-                    −
-                  </button>
+                <button
+                  onClick={decrement}
+                  disabled={medicationPlan.duration_value <= 1}
+                  className={`border-2 border-transparent w-[25px] h-[25px] flex items-center justify-center rounded-full duration-300
+                    ${medicationPlan.duration_value <= 1
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]"}
+                  `}
+                >
+                  −
+                </button>
                   <input
                     type="number"
                     value={medicationPlan.duration_value}
@@ -458,7 +492,11 @@ export default function MedicationsPlans() {
               </button>
               <button
                 onClick={() => Submit()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!medicationPlan.medicationId || medicationPlan.medicationId === "None"}
+                className={`w-[85px] p-1 rounded-xl text-white ml-7 border-2 
+                  ${!medicationPlan.medicationId || medicationPlan.medicationId === "None" 
+                    ? "bg-gray-400 border-gray-400 cursor-not-allowed" 
+                    : "bg-[#089bab] border-[#089bab] hover:bg-transparent hover:text-black duration-300"}`}
               >
                 Add
               </button>
@@ -472,10 +510,10 @@ export default function MedicationsPlans() {
           <div className="bg-white rounded-xl p-5 text-xl flex flex-col items-center shadow-xl w-[500px]">
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">
-                Add Treatment Note
+                Edit Treatment Note
               </h1>
               <div className="flex flex items-center my-3 font-semibold">
-                <label className="px-4 mb-2">Medication Name</label>
+                <label className="px-4 mb-2">Medication Name <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <select
                   value={medicationPlan.medicationId}
                   onChange={(e) =>
@@ -484,7 +522,7 @@ export default function MedicationsPlans() {
                       medicationId: e.target.value,
                     }))
                   }
-                  className="mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="w-[175px] mb-[10px] ml-5 border-2 border-transparent focus:border-[#089bab] bg-gray-300 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
                   <option>None</option>
                   {showOptions}
@@ -509,12 +547,17 @@ export default function MedicationsPlans() {
               <div className="flex items-center font-semibold mt-3 flex-wrap justify-end">
                 <label className="px-4 flex-1 mb-[10px]">Duration</label>
                 <div className="flex items-center mb-[10px]">
-                  <button
-                    onClick={decrement}
-                    className="border-2 border-transparent bg-[#089bab] w-[25px] h-[25px] flex items-center justify-center text-white hover:bg-white hover:text-black hover:border-[#089bab] rounded-full duration-300"
-                  >
-                    −
-                  </button>
+                <button
+                  onClick={decrement}
+                  disabled={medicationPlan.duration_value <= 1}
+                  className={`border-2 border-transparent w-[25px] h-[25px] flex items-center justify-center rounded-full duration-300
+                    ${medicationPlan.duration_value <= 1
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-[#089bab] text-white hover:bg-white hover:text-black hover:border-[#089bab]"}
+                  `}
+                >
+                  −
+                </button>
                   <input
                     type="number"
                     value={medicationPlan.duration_value}
@@ -569,7 +612,29 @@ export default function MedicationsPlans() {
               </button>
               <button
                 onClick={() => Edit()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={
+                  !medicationPlan.medicationId ||
+                  medicationPlan.medicationId === "None" ||
+                  (
+                    medicationPlan.medicationId === oldMedicationPlan.medicationId &&
+                    medicationPlan.dose === oldMedicationPlan.dose &&
+                    medicationPlan.duration_value === oldMedicationPlan.duration_value &&
+                    medicationPlan.duration_unit === oldMedicationPlan.duration_unit
+                  )
+                }
+                className={`w-[85px] p-1 rounded-xl text-white ml-7 border-2 
+                  ${
+                    !medicationPlan.medicationId ||
+                    medicationPlan.medicationId === "None" ||
+                    (
+                      medicationPlan.medicationId === oldMedicationPlan.medicationId &&
+                      medicationPlan.dose === oldMedicationPlan.dose &&
+                      medicationPlan.duration_value === oldMedicationPlan.duration_value &&
+                      medicationPlan.duration_unit === oldMedicationPlan.duration_unit
+                    )
+                      ? "bg-gray-400 border-gray-400 cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] hover:bg-transparent hover:text-black duration-300"
+                  }`}
               >
                 Edit
               </button>
@@ -639,14 +704,14 @@ export default function MedicationsPlans() {
         </div>
       )}
 
-      {confirm &&
+      {confirm &&(
         <Confirm
           img={confirmDelete}
           label={<>Do You Want Really To Delete <span className="font-bold">{medicationPlan.name}</span> ?</>}
           onCancel={() => handleCancelDelete()}
           onConfirm={() => handleDelete()}
         />
-      }
+      )}
 
       {isLoading && <Loading />}
 

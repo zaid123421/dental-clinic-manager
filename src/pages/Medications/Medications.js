@@ -694,14 +694,14 @@ export default function Medications() {
         </div>
       )}
 
-      {confirm &&
+      {confirm &&(
         <Confirm
           img={confirmDelete}
           onCancel={() => handlCancelDelete()}
           onConfirm={() => handleDelete()}
           label={<>Do You Want Really To Delete <span className="font-bold">{medicationForm.name}</span> With All Medication Plans Associated With It ?</>}
         />
-      }
+      )}
 
       {isLoading && <Loading />}
 
