@@ -4,7 +4,6 @@ import FormInput from "../../components/FormInput";
 import Sidebar from "../../components/Sidebar";
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
-import PlusButton from "../../components/PlusButton";
 import Title from "../../components/Title";
 import Confirm from "../../components/Confirm";
 // import icons
@@ -54,6 +53,10 @@ export default function Medications() {
     description: "",
     image: null,
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [imageError, setImageError] = useState("");
 
   // useRef
   const medicationId = useRef();
@@ -107,7 +110,13 @@ export default function Medications() {
       : URL.createObjectURL(medicationForm.image)
     : null;
 
-  const showCards = cards.map((card, index) => (
+  const filteredCards = cards.filter((card) => {
+    const title = (card?.name || "").toString().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
+    return title.startsWith(q);
+  });
+
+  const showCards = filteredCards.map((card, index) => (
     <div
       key={index}
       onClick={() => {
@@ -206,12 +215,43 @@ export default function Medications() {
     }));
   }
 
+  const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const maxSize = 256 * 1024; 
+  let errorMsg = "";
+
+  if (!file.type.startsWith("image/")) {
+    errorMsg = "The selected file must be an image (jpg, png, ...).";
+  } else if (file.size > maxSize) {
+    errorMsg = "Image size must be less than 256KB.";
+  }
+
+  if (errorMsg) {
+    setImageError(errorMsg);
+    setMedicationForm((prev) => ({
+      ...prev,
+      image: null,
+    }));
+    return;
+  }
+
+  setMedicationForm((prev) => ({
+    ...prev,
+    image: file,
+  }));
+  setImageError("");
+};
+
   async function submit() {
     setIsLoading(true);
+    setNameError("");
+    setImageError("");
     const formData = new FormData();
     formData.append("name", medicationForm.name);
     formData.append("info", medicationForm.description);
-    formData.append("image", medicationForm.image);
+    if(medicationForm.image !== null) formData.append("image", medicationForm.image);
     try {
       await axios.post(`${BaseUrl}/medication`, formData, {
         headers: {
@@ -219,6 +259,8 @@ export default function Medications() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setImageError("");
+      setNameError("");
       setAddBox(false);
       setCount((prev) => prev + 1);
       setMedicationForm({
@@ -233,23 +275,29 @@ export default function Medications() {
       });
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]);
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
   async function edit() {
+    setImageError("");
+    setNameError("");
     setIsLoading(true);
     const formData = new FormData();
     if (medicationForm.name !== oldMedicationForm.name) {
       formData.append("name", medicationForm.name);
     }
-    formData.append("info", medicationForm.description);
+    formData.append("info", " ");
     if (medicationForm.image && typeof medicationForm.image !== "string") {
       formData.append("image", medicationForm.image);
     }
@@ -261,6 +309,8 @@ export default function Medications() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setImageError("");
+      setNameError("");
       setEditBox(false);
       setCount((prev) => prev + 1);
       setMedicationForm({
@@ -275,11 +325,15 @@ export default function Medications() {
       });
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]); 
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -338,6 +392,8 @@ export default function Medications() {
             icon={<FiPlus className="text-2xl" />}
           />
           <FormInput
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
             className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
@@ -354,7 +410,7 @@ export default function Medications() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Medication</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={medicationForm.name}
@@ -368,6 +424,9 @@ export default function Medications() {
                   placeholder="Add medication name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
               <div className="flex flex-col font-semibold">
                 <label className="px-4 mb-2">Description</label>
@@ -397,12 +456,7 @@ export default function Medications() {
                 ref={inputImageRef}
                 hidden
                 type="file"
-                onChange={(e) =>
-                  setMedicationForm((prev) => ({
-                    ...prev,
-                    image: e.target.files[0],
-                  }))
-                }
+                onChange={handleFileChange}
               />
 
               <div
@@ -426,10 +480,17 @@ export default function Medications() {
                 />
               )}
             </div>
+            <span className="text-xs">Max Size 256KB</span>
+              {/* error message under upload */}
+              {imageError && (
+                <span className="text-red-500 text-sm mt-1 font-semibold">{imageError}</span>
+              )}
             <div className="flex justify-center w-full mt-5">
               <button
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
+                  setImageError("");
+                  setNameError("");
                   setAddBox(false);
                   setMedicationForm({
                     name: "",
@@ -441,7 +502,13 @@ export default function Medications() {
                 Cancel
               </button>
               <button
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!medicationForm.name.trim() || imageError}
+                className={`w-[85px] border-2 p-1 rounded-xl duration-300 ml-7 
+                  ${
+                    !medicationForm.name.trim() || imageError
+                      ? "bg-gray-300 border-gray-300 text-white cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
                 onClick={() => submit()}
               >
                 Add
@@ -473,6 +540,9 @@ export default function Medications() {
                   placeholder="Add medication name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
               <div className="flex flex-col font-semibold">
                 <label className="px-4 mb-2">Medication Description</label>
@@ -502,12 +572,7 @@ export default function Medications() {
                 ref={inputImageRef}
                 hidden
                 type="file"
-                onChange={(e) =>
-                  setMedicationForm((prev) => ({
-                    ...prev,
-                    image: e.target.files[0],
-                  }))
-                }
+                onChange={handleFileChange}
               />
 
               <div
@@ -531,9 +596,16 @@ export default function Medications() {
                 />
               )}
             </div>
+              <span className="text-xs">Max Size 256KB</span>
+              {/* error message under upload */}
+              {imageError && (
+                <span className="text-red-500 text-sm mt-1 font-semibold">{imageError}</span>
+              )}
             <div className="flex justify-center w-full mt-5">
               <button
                 onClick={() => {
+                  setImageError("");
+                  setNameError("");
                   setEditBox(false);
                   setMedicationForm({
                     name: "",
@@ -546,8 +618,32 @@ export default function Medications() {
                 Cancel
               </button>
               <button
+                disabled={
+                  !medicationForm.name.trim() ||
+                  imageError ||
+                  (
+                    medicationForm.name === oldMedicationForm.name &&
+                    medicationForm.description === oldMedicationForm.description &&
+                    (medicationForm.image === oldMedicationForm.image ||
+                      (typeof medicationForm.image === "string" &&
+                        medicationForm.image === oldMedicationForm.image))
+                  )
+                }
                 onClick={() => edit()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                className={`w-[85px] border-2 p-1 rounded-xl duration-300 ml-7
+                  ${
+                    !medicationForm.name.trim() ||
+                    imageError ||
+                    (
+                      medicationForm.name === oldMedicationForm.name &&
+                      medicationForm.description === oldMedicationForm.description &&
+                      (medicationForm.image === oldMedicationForm.image ||
+                        (typeof medicationForm.image === "string" &&
+                          medicationForm.image === oldMedicationForm.image))
+                    )
+                      ? "bg-gray-300 border-gray-300 text-white cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Edit
               </button>

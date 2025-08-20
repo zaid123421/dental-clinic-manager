@@ -288,6 +288,7 @@ export default function Treatments() {
   }
 
   async function Edit() {
+    setNameError("");
     setIsLoading(true);
     const formData = new FormData();
     if (treatmentNote.name !== oldTreatmentNote.name) {
