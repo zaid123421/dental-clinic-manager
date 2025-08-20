@@ -297,7 +297,7 @@ export default function Medications() {
     if (medicationForm.name !== oldMedicationForm.name) {
       formData.append("name", medicationForm.name);
     }
-    formData.append("info", " ");
+    formData.append("info", medicationForm.description);
     if (medicationForm.image && typeof medicationForm.image !== "string") {
       formData.append("image", medicationForm.image);
     }
