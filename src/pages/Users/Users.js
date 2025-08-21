@@ -1,14 +1,13 @@
   // Components
   import Button from "../../components/Button";
   import FormInput from "../../components/FormInput";
-  import PlusButton from "../../components/PlusButton";
   import Sidebar from "../../components/Sidebar";
   import Title from "../../components/Title";
   import Confirm from "../../components/Confirm";
   import Loading from "../../components/Loading";
   import Modal from "../../components/Modal";
   // Icons
-  import { MdDelete } from "react-icons/md";
+  import { MdDelete, MdEdit } from "react-icons/md";
   import { FaBan } from "react-icons/fa";
   import { GoDash } from "react-icons/go";
   import { IoIosSearch } from "react-icons/io";
@@ -335,7 +334,6 @@
           {employee.name}
         </td>
         <td className="p-3">{employee.phone_number}</td>
-        {/* <td className="p-3">+350000</td> */}
         <td className="p-3">
           {employee.is_banned ? (
             <FaBan
@@ -358,6 +356,13 @@
               className="text-2xl text-green-500 hover:text-green-700 duration-300 cursor-pointer justify-self-center"
             />
           )}
+        </td>
+        <td className="p-3">
+          <MdEdit onClick={(e) =>{
+            e.stopPropagation();
+            nav(`/edit-employee?employeeId=${employee.id}`);
+          }}
+          className="text-2xl text-green-400 hover:text-green-500 duration-300 cursor-pointer justify-self-center" />
         </td>
         <td
           className={`p-3 ${
@@ -489,6 +494,7 @@
                 <th className="p-3">Phone Number</th>
                 {selectedType === "Patients" && <th className="p-3">Payments</th>}
                 <th className="p-3">Banned</th>
+                {selectedType === "Employees" && <th className="p-3">Edit</th>}
                 <th className="py-3 rounded-tr-2xl ">Delete</th>
               </thead>
               <tbody className="rounded-2xl">
