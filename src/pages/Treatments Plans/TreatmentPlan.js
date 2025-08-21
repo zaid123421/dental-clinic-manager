@@ -42,6 +42,7 @@ export default function TreatmentPlan() {
     medication_plan: null,
     treatment_note: null,
   });
+  const [originalStepInfo, setOriginalStepInfo] = useState(null);
 
   const [substepInfo, setSubstepInfo] = useState({  
     id: null,
@@ -50,12 +51,15 @@ export default function TreatmentPlan() {
     number: null,
     optionality: 0,
   });
+  const [originalSubStepInfo, setOriginalSubStepInfo] = useState(null);
 
   const [modal, setModal] = useState({
     isOpen: false,
     message: "",
     image: "",
   });
+
+  const [nameError, setNameError] = useState("");
 
   // useLocation
   const location = useLocation();
@@ -69,89 +73,46 @@ export default function TreatmentPlan() {
   const cookie = new Cookies();
   const token = cookie.get("token");
 
+  const headers = {
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
   useEffect(() => {
-    axios
-      .get(`${BaseUrl}/treatment-plan/${PlanId}`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setPlan(data.data.data);
-        setOriginalPlan(data.data.data);
-      })
-      .catch((error) => {
+    const fetchPlan = async () => {
+      try {
+        const res = await axios.get(`${BaseUrl}/treatment-plan/${PlanId}`, { headers });
+        setPlan(res.data.data);
+        setOriginalPlan(res.data.data);
+      } catch (error) {
         console.log(error);
-      });
+      }
+    };
+      fetchPlan();
   }, [refreshFlag]);
 
   useEffect(() => {
-    axios
-      .get(`${BaseUrl}/category`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setCategories(data.data.data);
-      })
-      .catch((error) => {
+    const fetchData = async () => {
+      try {
+        const [categoryRes, toothRes, medicationRes, noteRes] = await Promise.all([
+          axios.get(`${BaseUrl}/category`, { headers }),
+          axios.get(`${BaseUrl}/tooth-status`, { headers }),
+          axios.get(`${BaseUrl}/medication-plan`, { headers }),
+          axios.get(`${BaseUrl}/treatment-note`, { headers }),
+        ]);
+        setCategories(categoryRes.data.data);
+        setTooth(toothRes.data.data);
+        setMedicationsPlans(medicationRes.data.data);
+        setTreatmentsNotes(noteRes.data.data);
+      } catch (error) {
         console.log(error);
-      });
+      }
+    };
+    fetchData();
   }, []);
 
   useEffect(() => {
-    axios
-      .get(`${BaseUrl}/tooth-status`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setTooth(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get(`${BaseUrl}/medication-plan`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setMedicationsPlans(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get(`${BaseUrl}/treatment-note`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((data) => {
-        setTreatmentsNotes(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (addStep) {
+    if (addStep || addSubstep, editStep || editSubstep) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -159,7 +120,7 @@ export default function TreatmentPlan() {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [addStep]);
+  }, [addStep, addSubstep, editStep, editSubstep]);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -221,6 +182,14 @@ export default function TreatmentPlan() {
               <div
                 onClick={() => {
                   setEditStep(true);
+                  setOriginalStepInfo({
+                    id: step.id,
+                    name: step.name,
+                    number: step.queue,
+                    optionality: step.optional,
+                    medication_plan: step.medication_plan?.id || null,
+                    treatment_note: step.treatment_note?.id || null,
+                  });
                   setStepInfo({
                     id: step.id,
                     name: step.name,
@@ -271,7 +240,12 @@ export default function TreatmentPlan() {
                     <div
                       onClick={() =>{
                         setEditSubStep(true)
-                        console.log(sub)
+                        setOriginalSubStepInfo({
+                          id: sub.id,
+                          name: sub.name,
+                          optionality: sub.optional,
+                          number: sub.queue
+                        })
                         setSubstepInfo({
                           id: sub.id,
                           name: sub.name,
@@ -315,6 +289,16 @@ export default function TreatmentPlan() {
     );
   }
 
+  function isValid() {
+  return (
+    plan.name?.trim() &&
+    plan.cost !== null &&
+    plan.cost !== "" &&
+    plan.category &&
+    plan.tooth_status
+  );
+  }
+
   const handleCancelStepDelete = () => {
     setConfirmDeleteStep(false);
     setStepInfo({
@@ -345,9 +329,6 @@ export default function TreatmentPlan() {
     if (stepInfo.treatment_note !== null) {
       formData.append("treatment_note_id", stepInfo.treatment_note);
     }
-    formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
     try {
       await axios.post(`${BaseUrl}/treatment-step`, formData, {
         headers: {
@@ -590,6 +571,8 @@ export default function TreatmentPlan() {
   }
 
   async function EditPlan() {
+    setIsLoading(true);
+    setNameError("");
     const formData = new FormData();
 
     if (plan.name !== originalPlan.name) {
@@ -616,6 +599,7 @@ export default function TreatmentPlan() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setNameError("");
       setPlan(() => ({
         id: null,
         name: "",
@@ -634,15 +618,29 @@ export default function TreatmentPlan() {
       }, 3000);
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]);
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   }
+
+  const isChanged = () => {
+    if (!originalStepInfo) return false;
+    return JSON.stringify(stepInfo) !== JSON.stringify(originalStepInfo);
+  };
+
+  const isSubstepChanged = () => {
+    if (!originalSubStepInfo) return false;
+    return JSON.stringify(substepInfo) !== JSON.stringify(originalSubStepInfo);
+  };
 
   return (
     <>
@@ -659,7 +657,10 @@ export default function TreatmentPlan() {
         <div className="bg-transparent mt-3 p-5 rounded-xl flex flex-col lg:flex-row">
           <div className="lg:w-1/2 text-xl pr-5">
             <div className=" flex flex-col md:flex-row md:items-center w-full justify-between">
-              <p className="font-semibold mb-2 md:mb-0">Name:</p>
+              <p className="font-semibold mb-2 md:mb-0">Name <span className="text-red-500 text-sm ml-1">requried</span></p>
+              {nameError && (
+                <span className="text-red-500 font-semibold text-sm mt-1 mt-10 absolute">{nameError}</span>
+              )}
               <input
                 name="name"
                 value={plan?.name || ""}
@@ -675,7 +676,7 @@ export default function TreatmentPlan() {
               />
             </div>
             <div className="flex flex-col md:flex-row md:items-center my-2 justify-between">
-              <p className="font-semibold mb-2 md:mb-0">Category:</p>
+              <p className="font-semibold mb-2 md:mb-0">Category <span className="text-red-500 text-sm ml-1">requried</span></p>
               <select
                 value={plan?.category?.id}
                 onChange={(e) =>
@@ -686,12 +687,12 @@ export default function TreatmentPlan() {
                 }
                 className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] rounded-xl px-3 py-1 outline-none cursor-pointer"
               >
-                <option>None</option>
+                <option value="">None</option>
                 {showCategoriesOptions}
               </select>
             </div>
             <div className="flex flex-col md:flex-row md:items-center w-full justify-between my-2">
-              <p className="font-semibold mb-2 md:mb-0">Cost:</p>
+              <p className="font-semibold mb-2 md:mb-0">Cost <span className="text-red-500 text-sm ml-1">requried</span></p>
               <input
                 placeholder="Edit plan cost"
                 type="number"
@@ -707,7 +708,8 @@ export default function TreatmentPlan() {
             </div>
             <div className="flex flex-col md:flex-row md:items-center w-full justify-between">
               <p className="font-semibold mb-2 md:mb-0">
-                Tooth Status After Plan:
+                Tooth Status After plan
+                <span className="text-red-500 text-sm ml-1">requried</span>
               </p>
               <select
                 value={plan?.tooth_status?.id}
@@ -719,24 +721,24 @@ export default function TreatmentPlan() {
                 }
                 className="bg-white shadow-lg w-full md:w-[200px] md:ml-5 border-2 border-transparent focus:border-[#089bab] rounded-xl px-3 py-1 outline-none cursor-pointer"
               >
-                <option>None</option>
+                <option value="">None</option>
                 {showToothNames}
               </select>
             </div>
             <div className="flex justify-center mt-5">
-              <button
-                disabled={!isDirty()}
-                onClick={EditPlan}
-                className={`text-sm md:text-xl rounded-xl px-4 py-1 border-2 duration-300
-                  ${
-                    isDirty()
-                      ? "bg-[#089bab] text-white border-[#089bab] hover:text-black hover:bg-transparent"
-                      : "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
-                  }
-                `}
-              >
-                Save Changes
-              </button>
+            <button
+              disabled={!isDirty() || !isValid()}
+              onClick={EditPlan}
+              className={`text-sm md:text-xl rounded-xl px-4 py-1 border-2 duration-300
+                ${
+                  isDirty() && isValid()
+                    ? "bg-[#089bab] text-white border-[#089bab] hover:text-black hover:bg-transparent"
+                    : "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                }
+              `}
+            >
+              Save Changes
+            </button>
             </div>
           </div>
           <div
@@ -763,7 +765,7 @@ export default function TreatmentPlan() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Step</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="pr-4 mb-2">Name</label>
+                <label className="pr-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={stepInfo.name}
@@ -877,7 +879,12 @@ export default function TreatmentPlan() {
               </button>
               <button
                 onClick={() => Add()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!stepInfo.name.trim()}
+                className={`w-[85px] p-1 rounded-xl border-2 duration-300 ml-7 
+                  ${!stepInfo.name.trim()
+                    ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                    : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Add
               </button>
@@ -892,7 +899,7 @@ export default function TreatmentPlan() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Edit Step</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="pr-4 mb-2">Name</label>
+                <label className="pr-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={stepInfo.name}
@@ -1008,7 +1015,12 @@ export default function TreatmentPlan() {
               </button>
               <button
                 onClick={() => UpdateStep()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!isChanged() || stepInfo.name.trim() === ""}
+                className={`w-[85px] border-2 p-1 rounded-xl ml-7 duration-300 
+                  ${!isChanged() || stepInfo.name.trim() === ""
+                    ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                    : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Edit
               </button>
@@ -1101,7 +1113,12 @@ export default function TreatmentPlan() {
               </button>
               <button
                 onClick={() => AddSubstep()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!substepInfo.name.trim()}
+                className={`w-[85px] p-1 rounded-xl border-2 duration-300 ml-7 
+                  ${!substepInfo.name.trim()
+                    ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                    : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Add
               </button>
@@ -1201,7 +1218,13 @@ export default function TreatmentPlan() {
               </button>
               <button
                 onClick={() => EditSubstep()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!isSubstepChanged() || substepInfo.name.trim() === ""}
+                className={`w-[85px] border-2 p-1 rounded-xl ml-7 duration-300 
+                  ${
+                    !isSubstepChanged() || substepInfo.name.trim() === ""
+                      ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                      : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
+                  }`}
               >
                 Edit
               </button>
@@ -1219,14 +1242,14 @@ export default function TreatmentPlan() {
         />
       )}
 
-      {confirmDeleteSubstep &&
+      {confirmDeleteSubstep &&(
         <Confirm
           img={confirmDelete}
           label={<>Do You Want Really To Delete <span className="font-bold">{substepInfo.name}</span> ?</>}
           onCancel={() => handleCancelSubstepDelete()}
           onConfirm={() => DeleteSubstep()}
         />
-      }
+      )}
 
       {isLoading && <Loading />}
 

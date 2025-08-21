@@ -474,7 +474,7 @@ export default function TreatmentsPlans() {
                 name: "",
               });
             }}
-            className="lg:mx-2 my-5 lg:my-0 min-w-[200px] flex"
+            className="lg:mx-1 my-5 lg:my-0 min-w-[200px] flex"
             variant="primary"
             icon={<FiPlus className="mr-3 text-2xl" />}
             children="Add Category"
@@ -644,7 +644,7 @@ export default function TreatmentsPlans() {
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
                 />
                 {nameError && (
-                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                  <span className="text-red-500 text-sm mt-1 ml-2 font-semibold">{nameError}</span>
                 )}
               </div>
               <div className="flex items-center justify-between">
