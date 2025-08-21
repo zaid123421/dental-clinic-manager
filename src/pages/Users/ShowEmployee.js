@@ -39,9 +39,6 @@ export default function ShowEmployee() {
       });
   }, []);
 
-  console.log(employee);
-  console.log(ImageUrl + employee?.image);
-
   return(
     <>
       <Sidebar />
@@ -54,7 +51,7 @@ export default function ShowEmployee() {
 
         <div className="flex flex-col-reverse justify-center lg:flex-row">
 
-          <div className="font-semibold text-xl md:p-5">
+          <div className="font-semibold text-xl md:p-5 w-2/3">
             <div>
               <label className="mr-5 font-bold">Name:</label>
               <label>{employee?.name}</label>
@@ -65,7 +62,7 @@ export default function ShowEmployee() {
             </div>
             <div className="mt-5">
               <label className="mr-5 font-bold">Address:</label>
-              <label>{employee?.address || "Qudsaya Suburb, Damascus"}</label>
+              <label className="text-center">{employee?.address || "No Address"}</label>
             </div>
             <div className="mt-5">
               <label className="mr-5 font-bold">Gender:</label>
@@ -74,6 +71,12 @@ export default function ShowEmployee() {
             <div className="mt-5">
               <label className="mr-5 font-bold">Birthdate:</label>
               <label>{employee?.birthdate} ({employee?.age})</label>
+            </div>
+            <div className="mt-5">
+              <label className="mr-5 font-bold">SSN:</label>
+              <label>
+                {employee?.ssn}
+              </label>
             </div>
             <div className="mt-5">
               <label className="mr-5 font-bold">Ban:</label>

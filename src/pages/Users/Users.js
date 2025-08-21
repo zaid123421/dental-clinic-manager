@@ -82,6 +82,18 @@
       image: "",
     });
 
+    const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredEmployees = employees?.filter((employee) =>
+    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.phone_number.startsWith(searchTerm)
+  );
+
+  const filteredPatients = patients?.filter((patient) =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone_number.startsWith(searchTerm)
+  );
+
     // useRef To Store id and url When Need To Communicating Backend
     const banId = useRef(null);
     const banUrl = useRef(null);
@@ -308,7 +320,7 @@
             : banDuration.duration_value,
     }));
 
-    const showEmployees = employees?.map((employee, index) => (
+    const showEmployees = filteredEmployees?.map((employee, index) => (
       <tr
       onClick={() => nav(`/show-employee?employeeId=${employee.id}`)}
         className={`p-3 ${
@@ -368,7 +380,7 @@
       </tr>
     ));
 
-    const showPatients = patients?.map((patient, index) => (
+    const showPatients = filteredPatients?.map((patient, index) => (
       <tr onClick={() => nav(`/show-patient?patientId=${patient.id}`)} className={`p-3 ${index !== patients.length - 1 ? "border-b-[1px] border-b-gray-300" : ""} text-center font-semibold bg-white hover:text-white hover:bg-[#089bab] cursor-pointer`}>
         <td className={`p-3 ${index === patients.length - 1 ? "rounded-bl-2xl" : ""}`}>
           {patient.name}
@@ -441,6 +453,8 @@
               ""
             )}
             <FormInput
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               icon={<IoIosSearch className="text-black text-lg" />}
               placeholder="Search"
               className="w-full md:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
@@ -478,31 +492,61 @@
                 <th className="py-3 rounded-tr-2xl ">Delete</th>
               </thead>
               <tbody className="rounded-2xl">
-                {selectedType === "Employees" ? showEmployees : showPatients}
+                {selectedType === "Employees" ? (
+                  filteredEmployees?.length > 0 ? showEmployees : (
+                    <tr>
+                      <td colSpan={4} className="text-center p-5 text-gray-500 font-semibold bg-white">
+                        No Results Found
+                      </td>
+                    </tr>
+                  )
+                ) : (
+                  filteredPatients?.length > 0 ? showPatients : (
+                    <tr>
+                      <td colSpan={5} className="text-center p-5 text-gray-500 font-semibold bg-white">
+                        No Results Found
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* Pagination Section When Selected Type is Patients */}
-          {selectedType === "Patients" &&
-            <div className="flex justify-center items-center w-full mt-5 text-xl">
-              {/* Increment Page Button */}
-              <button
+        {/* Pagination Section When Selected Type is Patients */}
+        {selectedType === "Patients" && filteredPatients.length > 0 && (
+          <div className="flex justify-center items-center w-full mt-5 text-xl">
+            {/* Decrement Page Button */}
+            <button
               onClick={() => handleDecrementPage()}
-              className="bg-[#089bab] border-2 border-[#089bab] hover:bg-transparent hover:text-black duration-300 text-white w-[25px] h-[25px] rounded-full flex justify-center items-center">
+              disabled={pagination.current_page === 1}
+              className={`bg-[#089bab] border-2 border-[#089bab] text-white w-[25px] h-[25px] rounded-full flex justify-center items-center duration-300 ${
+                pagination.current_page === 1
+                  ? "bg-gray-400 border-gray-400 cursor-not-allowed hover:text-white"
+                  : "hover:bg-transparent hover:text-black"
+              }`}
+            >
               <GoDash className="text-sm" />
-              </button>
-              <span className="text-2xl font-semibold mx-5">
-                {pagination.current_page}
-              </span>
-              {/* Decrement Page Button */}
-              <button
+            </button>
+
+            <span className="text-2xl font-semibold mx-5">
+              {pagination.current_page}
+            </span>
+
+            {/* Increment Page Button */}
+            <button
               onClick={() => hanldeIncremetPage()}
-              className="bg-[#089bab] border-2 border-[#089bab] hover:bg-transparent hover:text-black duration-300 text-white w-[25px] h-[25px] rounded-full flex justify-center items-center">
-                <FiPlus className="text-sm" />
-              </button>
-            </div>
-          }
+              disabled={pagination.current_page === pagination.last_page}
+              className={`bg-[#089bab] border-2 border-[#089bab] text-white w-[25px] h-[25px] rounded-full flex justify-center items-center duration-300 ${
+                pagination.current_page === pagination.last_page
+                  ? "bg-gray-400 border-gray-400 cursor-not-allowed hover:text-white"
+                  : "hover:bg-transparent hover:text-black"
+              }`}
+            >
+              <FiPlus className="text-sm" />
+            </button>
+          </div>
+        )}
 
         </div>
 
