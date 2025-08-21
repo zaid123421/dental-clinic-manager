@@ -59,6 +59,9 @@ export default function TreatmentsPlans() {
     image: "",
   });
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [nameError, setNameError] = useState("");
+
   // Cookies
   const cookie = new Cookies();
   const token = cookie.get("token");
@@ -175,7 +178,11 @@ export default function TreatmentsPlans() {
       ? plans
       : plans?.filter((plan) => plan.category.name === selectedType);
 
-  const showPlans = filteredPlans?.map((plan, index) => (
+  const searchedPlans = filteredPlans?.filter((plan) =>
+    plan.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const showPlans = searchedPlans?.map((plan, index) => (
     <div
       key={index}
       className="bg-white shadow-md p-3 rounded-xl text-lg font-semibold overflow-hidden"
@@ -225,6 +232,7 @@ export default function TreatmentsPlans() {
   ));
 
   async function AddCategory() {
+    setNameError("");
     setIsLoading(true);
     const formData = new FormData();
     formData.append("name", category.name);
@@ -236,6 +244,7 @@ export default function TreatmentsPlans() {
         },
       });
       console.log(res.data.data);
+      setNameError("");
       setSelectedType(category.name);
       setAddCategoryBox(false);
       setRefreshFlag((prev) => prev + 1);
@@ -254,18 +263,22 @@ export default function TreatmentsPlans() {
       });
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]);
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
   async function EditCategory() {
-    console.log(category.id);
+    setNameError("");
     setIsLoading(true);
     const formData = new FormData();
     if (category.name !== oldCategory.name) {
@@ -273,12 +286,21 @@ export default function TreatmentsPlans() {
     }
     formData.append("_method", "patch");
     try {
-      await axios.post(`${BaseUrl}/category/${category.id}`, formData, {
+      const res = await axios.post(`${BaseUrl}/category/${category.id}`, formData, {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
+        setCategory({
+          id: res.data.data.id,
+          name: res.data.data.name,
+        });
+        setOldCategory({
+          id: res.data.data.id,
+          name: res.data.data.name,
+        });
+      setNameError("");
       setSelectedType(category.name);
       setEditCategoryBox(false);
       setRefreshFlag((prev) => prev + 1);
@@ -289,11 +311,15 @@ export default function TreatmentsPlans() {
       });
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]);
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -369,6 +395,7 @@ export default function TreatmentsPlans() {
 
   async function AddPlan() {
     setIsLoading(true);
+    setNameError("");
     const formData = new FormData();
     formData.append("name", plan.name);
     formData.append("category_id", plan.category);
@@ -381,6 +408,7 @@ export default function TreatmentsPlans() {
           Authorization: `Bearer ${token}`,
         },
       });
+      setNameError("");
       setAddBox(false);
       setPlan(() => ({
         id: null,
@@ -400,11 +428,15 @@ export default function TreatmentsPlans() {
       }, 3000);
     } catch (err) {
       console.log(err);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
+      if (err.response?.data?.message?.name) {
+        setNameError(err.response?.data?.message.name[0]);
+      } else {
+        setModal({
+          isOpen: true,
+          message: "Something Went Wrong !",
+          image: error,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -449,6 +481,8 @@ export default function TreatmentsPlans() {
           />
           <PlusButton onClick={() => setAddBox(true)} />
           <FormInput
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             icon={<IoIosSearch className="text-black text-lg" />}
             placeholder="Search"
             className="w-full lg:w-[250px] bg-white border-[#089bab] placeholder-black shadow-lg"
@@ -485,7 +519,7 @@ export default function TreatmentsPlans() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Category</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <input
                   name="name"
                   value={category.name}
@@ -499,12 +533,16 @@ export default function TreatmentsPlans() {
                   placeholder="Add category name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
             </div>
             <div className="flex justify-center w-full mt-5">
               <button
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
+                  setNameError("");
                   setAddCategoryBox(false);
                   setCategory({
                     id: null,
@@ -515,7 +553,12 @@ export default function TreatmentsPlans() {
                 Cancel
               </button>
               <button
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!category.name.trim()}
+                className={`w-[85px] p-1 rounded-xl ml-7 ${
+                  category.name.trim()
+                    ? "bg-[#089bab] border-2 border-[#089bab] text-white hover:bg-transparent hover:text-black duration-300"
+                    : "bg-gray-400 border-2 border-gray-400 text-white cursor-not-allowed"
+                }`}
                 onClick={() => AddCategory()}
               >
                 Add
@@ -531,7 +574,7 @@ export default function TreatmentsPlans() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Edit Category</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <input
                   name="name"
                   value={category.name}
@@ -545,12 +588,16 @@ export default function TreatmentsPlans() {
                   placeholder="Edit category name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-100 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
             </div>
             <div className="flex justify-center w-full mt-5">
               <button
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
+                  setNameError("");
                   setEditCategoryBox(false);
                   setCategory((prev) => ({
                     ...prev,
@@ -561,7 +608,12 @@ export default function TreatmentsPlans() {
                 Cancel
               </button>
               <button
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                disabled={!category.name.trim() || category.name === oldCategory.name}
+                className={`w-[85px] p-1 rounded-xl ml-7 ${
+                  category.name.trim() && category.name !== oldCategory.name
+                    ? "bg-[#089bab] border-2 border-[#089bab] text-white hover:bg-transparent hover:text-black duration-300"
+                    : "bg-gray-400 border-2 border-gray-400 text-white cursor-not-allowed"
+                }`}
                 onClick={() => EditCategory()}
               >
                 Edit
@@ -577,7 +629,7 @@ export default function TreatmentsPlans() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Plan</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="px-4 mb-2">Name</label>
+                <label className="px-4 mb-2">Name <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <input
                   name="name"
                   value={plan.name}
@@ -591,9 +643,12 @@ export default function TreatmentsPlans() {
                   placeholder="Add Plan name"
                   className="placeholder:text-base outline-none border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl py-1 px-4"
                 />
+                {nameError && (
+                  <span className="text-red-500 text-sm mt-1 ml-2">{nameError}</span>
+                )}
               </div>
               <div className="flex items-center justify-between">
-                <label className="px-4 mb-2 font-semibold">Category</label>
+                <label className="px-4 mb-2 font-semibold">Category <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <select
                   value={plan.category}
                   onChange={(e) =>
@@ -602,15 +657,16 @@ export default function TreatmentsPlans() {
                       category: e.target.value,
                     }))
                   }
-                  className="max-w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
-                  <option>None</option>
+                  <option value="">None</option>
                   {showCategoriesOptions}
                 </select>
               </div>
               <div className="flex items-center justify-between">
                 <label className="px-4 mb-2 font-semibold">
                   Tooth Status After Plan
+                  <span className="ml-1 text-red-500 text-sm">required</span>
                 </label>
                 <select
                   value={plan.tooth_status}
@@ -620,14 +676,14 @@ export default function TreatmentsPlans() {
                       tooth_status: e.target.value,
                     }))
                   }
-                  className="min-w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
+                  className="min-w-[150px] md:w-[150px] mb-[10px] border-2 border-transparent focus:border-[#089bab] bg-gray-200 rounded-xl px-3 py-1 outline-none cursor-pointer"
                 >
-                  <option>None</option>
+                  <option value="">None</option>
                   {showToothNames}
                 </select>
               </div>
               <div className="flex my-3 font-semibold justify-between">
-                <label className="px-4">Cost</label>
+                <label className="px-4">Cost <span className="ml-1 text-red-500 text-sm">required</span></label>
                 <input
                   placeholder="Add plan cost"
                   type="number"
@@ -646,6 +702,7 @@ export default function TreatmentsPlans() {
               <button
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
+                  setNameError("");
                   setAddBox(false);
                   setPlan({
                     name: "",
@@ -658,8 +715,13 @@ export default function TreatmentsPlans() {
                 Cancel
               </button>
               <button
+                disabled={!plan.name.trim() || !plan.category || !plan.cost || !plan.tooth_status}
                 onClick={() => AddPlan()}
-                className="w-[85px] bg-[#089bab] border-2 border-[#089bab] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300 ml-7"
+                className={`w-[85px] p-1 rounded-xl ml-7 ${
+                  !plan.name.trim() || !plan.category || !plan.cost || !plan.tooth_status
+                    ? "bg-gray-400 border-gray-400 text-white cursor-not-allowed"
+                    : "bg-[#089bab] border-2 border-[#089bab] text-white hover:bg-transparent hover:text-black duration-300"
+                }`}
               >
                 Add
               </button>
