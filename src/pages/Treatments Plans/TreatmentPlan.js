@@ -1035,7 +1035,7 @@ export default function TreatmentPlan() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Add Substep</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="pr-4 mb-2">Name</label>
+                <label className="pr-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={substepInfo.name}
@@ -1133,7 +1133,7 @@ export default function TreatmentPlan() {
             <div className=" mb-5 w-full">
               <h1 className="font-bold text-2xl text-center">Edit Substep</h1>
               <div className="flex flex-col my-3 font-semibold">
-                <label className="pr-4 mb-2">Name</label>
+                <label className="pr-4 mb-2">Name <span className="text-red-500 text-sm ml-1">required</span></label>
                 <input
                   name="name"
                   value={substepInfo.name}
