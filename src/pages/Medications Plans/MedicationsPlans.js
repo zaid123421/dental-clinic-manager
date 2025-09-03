@@ -273,7 +273,7 @@ export default function MedicationsPlans() {
       className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
     >
       <div className="bg-blue-300 rounded-md h-[150px] md:h-[125px] bg-contain">
-        <imgDose
+        <img
           className="rounded-md w-full h-full"
           src={`${ImageUrl}${card.medication.image}`}
           alt="medication_image"

@@ -23,65 +23,48 @@ import { BaseUrl, ImageUrl } from "../../config";
 // import axios
 import axios from "axios";
 import Cookies from "universal-cookie";
+import useMedications from "../../hooks/useMedications";
+import { addMedication } from "../../services/medications";
 
 export default function Medications() {
   // States
-  const [cards, setCards] = useState([]);
   const [confirm, setConfirmDelete] = useState(false);
   const [addBox, setAddBox] = useState(false);
   const [editBox, setEditBox] = useState(false);
   const [showBox, setShowBox] = useState(false);
-  const [count, setCount] = useState(0);
   const [dragActive, setDragActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [id, setId] = useState(null);
-
-  const [modal, setModal] = useState({
-    isOpen: false,
-    message: "",
-    image: "",
-  });
+    const {
+    medications,
+    isLoading,
+    nameError,
+    modal,
+    setModal,
+    handleAddMedication,
+    handleDeleteMedication,
+    handleEditMedication } = useMedications();
 
   const [medicationForm, setMedicationForm] = useState({
+    id: null,
     name: "",
     description: "",
     image: null,
   });
 
   const [oldMedicationForm, setOldMedicationForm] = useState({
+    id: null,
     name: "",
     description: "",
     image: null,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [nameError, setNameError] = useState("");
   const [imageError, setImageError] = useState("");
 
   // useRef
   const medicationId = useRef();
   const inputImageRef = useRef(null);
 
-  // Cookies
-  const cookie = new Cookies();
-  const token = cookie.get("token");
-
   // useEffect
-  useEffect(() => {
-    axios
-      .get(`${BaseUrl}/medication`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      })
-      .then((data) => {
-        setCards(data.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [count]);
 
   useEffect(() => {
     if (confirm || addBox || editBox) {
@@ -110,13 +93,13 @@ export default function Medications() {
       : URL.createObjectURL(medicationForm.image)
     : null;
 
-  const filteredCards = cards.filter((card) => {
+  const filteredCards = medications?.filter((card) => {
     const title = (card?.name || "").toString().toLowerCase();
     const q = searchQuery.trim().toLowerCase();
     return title.startsWith(q);
   });
 
-  const showCards = filteredCards.map((card, index) => (
+  const showCards = filteredCards?.map((card, index) => (
     <div
       key={index}
       onClick={() => {
@@ -124,7 +107,7 @@ export default function Medications() {
         setMedicationForm({
           name: card.name,
           description: card.info,
-          image: `${ImageUrl}${card.image}`,
+          image: card.image ? `${ImageUrl}${card.image}` : null,
         });
       }}
       className="cursor-pointer shadow-xl bg-white rounded-xl p-4 flex flex-col justify-between text-center"
@@ -141,16 +124,19 @@ export default function Medications() {
         <div
           onClick={(e) => {
             setOldMedicationForm({
+              id: card.id,
               name: card.name,
               description: card.info,
-              image: `${ImageUrl}${card.image}`,
+              image: card.image ? `${ImageUrl}${card.image}` : null,
             });
             setMedicationForm({
+              id: card.id,
               name: card.name,
               description: card.info,
-              image: `${ImageUrl}${card.image}`,
+              image: card.image ? `${ImageUrl}${card.image}` : null,
             });
-            setId(card.id);
+            // setId(card.id);
+            // medicationId.current = card.id;
             setEditBox(true);
             e.stopPropagation();
           }}
@@ -216,161 +202,34 @@ export default function Medications() {
   }
 
   const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    setImageError("");
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const maxSize = 256 * 1024; 
-  let errorMsg = "";
+    const maxSize = 256 * 1024; 
+    let errorMsg = "";
 
-  if (!file.type.startsWith("image/")) {
-    errorMsg = "The selected file must be an image (jpg, png, ...).";
-  } else if (file.size > maxSize) {
-    errorMsg = "Image size must be less than 256KB.";
-  }
+    if (!file.type.startsWith("image/")) {
+      errorMsg = "The selected file must be an image (jpg, png, ...).";
+    } else if (file.size > maxSize) {
+      errorMsg = "Image size must be less than 256KB.";
+    }
 
-  if (errorMsg) {
-    setImageError(errorMsg);
-    setMedicationForm((prev) => ({
-      ...prev,
-      image: null,
-    }));
-    return;
+    if (errorMsg) {
+      setImageError(errorMsg);
+      setMedicationForm((prev) => ({
+        ...prev,
+        image: null,
+      }));
+      return;
   }
 
   setMedicationForm((prev) => ({
     ...prev,
     image: file,
   }));
-  setImageError("");
-};
-
-  async function submit() {
-    setIsLoading(true);
-    setNameError("");
-    setImageError("");
-    const formData = new FormData();
-    formData.append("name", medicationForm.name);
-    formData.append("info", medicationForm.description);
-    if(medicationForm.image !== null) formData.append("image", medicationForm.image);
-    try {
-      await axios.post(`${BaseUrl}/medication`, formData, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setImageError("");
-      setNameError("");
-      setAddBox(false);
-      setCount((prev) => prev + 1);
-      setMedicationForm({
-        name: "",
-        description: "",
-        image: null,
-      });
-      setModal({
-        isOpen: true,
-        message: "The Medication Has Been Added Successfully !",
-        image: successImage,
-      });
-    } catch (err) {
-      console.log(err);
-      if (err.response?.data?.message?.name) {
-        setNameError(err.response?.data?.message.name[0]);
-      } else {
-        setModal({
-          isOpen: true,
-          message: "Something Went Wrong !",
-          image: error,
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function edit() {
-    setImageError("");
-    setNameError("");
-    setIsLoading(true);
-    const formData = new FormData();
-    if (medicationForm.name !== oldMedicationForm.name) {
-      formData.append("name", medicationForm.name);
-    }
-    formData.append("info", medicationForm.description);
-    if (medicationForm.image && typeof medicationForm.image !== "string") {
-      formData.append("image", medicationForm.image);
-    }
-    formData.append("_method", "patch");
-    try {
-      await axios.post(`${BaseUrl}/medication/${id}`, formData, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setImageError("");
-      setNameError("");
-      setEditBox(false);
-      setCount((prev) => prev + 1);
-      setMedicationForm({
-        name: "",
-        description: "",
-        image: null,
-      });
-      setModal({
-        isOpen: true,
-        message: "The Medication Has Been Edited Successfully !",
-        image: successImage,
-      });
-    } catch (err) {
-      console.log(err);
-      if (err.response?.data?.message?.name) {
-        setNameError(err.response?.data?.message.name[0]); 
-      } else {
-        setModal({
-          isOpen: true,
-          message: "Something Went Wrong !",
-          image: error,
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleDelete() {
-    setIsLoading(true);
-    try {
-      await axios.delete(`${BaseUrl}/medication/${medicationId.current}`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setMedicationForm(() => ({
-        name: "",
-        description: "",
-        image: null,
-      }));
-      setConfirmDelete(false);
-      setCount((prev) => prev + 1);
-      setModal({
-        isOpen: true,
-        message: "The Medication Has Been Deleted Successfully !",
-        image: successImage,
-      });
-    } catch {
-      setConfirmDelete(false);
-      setModal({
-        isOpen: true,
-        message: "Something Went Wrong !",
-        image: error,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  // setImageError("");
+  };
 
   return (
     <>
@@ -490,9 +349,10 @@ export default function Medications() {
                 className="w-[85px] bg-[#9e9e9e] border-2 border-[#9e9e9e] p-1 rounded-xl text-white hover:bg-transparent hover:text-black duration-300"
                 onClick={() => {
                   setImageError("");
-                  setNameError("");
+                  // setNameError("");
                   setAddBox(false);
                   setMedicationForm({
+                    id: null,
                     name: "",
                     description: "",
                     image: null,
@@ -509,7 +369,12 @@ export default function Medications() {
                       ? "bg-gray-300 border-gray-300 text-white cursor-not-allowed"
                       : "bg-[#089bab] border-[#089bab] text-white hover:bg-transparent hover:text-black"
                   }`}
-                onClick={() => submit()}
+                  onClick={() =>
+                    handleAddMedication(medicationForm, () => {
+                      setAddBox(false);
+                      setMedicationForm({ name: "", description: "", image: null });
+                    })
+                  }
               >
                 Add
               </button>
@@ -605,9 +470,10 @@ export default function Medications() {
               <button
                 onClick={() => {
                   setImageError("");
-                  setNameError("");
+                  // setNameError("");
                   setEditBox(false);
                   setMedicationForm({
+                    id: null,
                     name: "",
                     description: "",
                     image: null,
@@ -629,7 +495,16 @@ export default function Medications() {
                         medicationForm.image === oldMedicationForm.image))
                   )
                 }
-                onClick={() => edit()}
+                onClick={() => handleEditMedication(medicationForm, oldMedicationForm, () => {
+                  setImageError("");
+                  setEditBox(false);
+                  setMedicationForm({
+                    id: null,
+                    name: "",
+                    description: "",
+                    image: null,
+                  });
+                })}
                 className={`w-[85px] border-2 p-1 rounded-xl duration-300 ml-7
                   ${
                     !medicationForm.name.trim() ||
@@ -675,7 +550,7 @@ export default function Medications() {
               <div className="my-3 object-cover w-full flex justify-center">
                 <img
                   className="w-[150px] h-[150px]"
-                  alt="medication-plan-image"
+                  alt="medication-image"
                   src={medicationForm.image}
                 />
               </div>
@@ -694,11 +569,18 @@ export default function Medications() {
         </div>
       )}
 
-      {confirm &&(
+      {confirm && (
         <Confirm
           img={confirmDelete}
           onCancel={() => handlCancelDelete()}
-          onConfirm={() => handleDelete()}
+          onConfirm={() => handleDeleteMedication(medicationId.current, () => {
+            setMedicationForm(() => ({
+              name: "",
+              description: "",
+              image: null,
+            }));
+            setConfirmDelete(false);
+          })}
           label={<>Do You Want Really To Delete <span className="font-bold">{medicationForm.name}</span> With All Medication Plans Associated With It ?</>}
         />
       )}

@@ -501,7 +501,7 @@
                 {selectedType === "Employees" ? (
                   filteredEmployees?.length > 0 ? showEmployees : (
                     <tr>
-                      <td colSpan={4} className="text-center p-5 text-gray-500 font-semibold bg-white">
+                      <td colSpan={5} className="text-center p-5 text-gray-500 font-semibold bg-white">
                         No Results Found
                       </td>
                     </tr>

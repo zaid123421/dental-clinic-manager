@@ -12,6 +12,7 @@ import AddEmployee from "./pages/Users/AddEmployee";
 import ShowEmployee from "./pages/Users/ShowEmployee";
 import ShowPatient from "./pages/Users/ShowPatient";
 import EditEmployee from "./pages/Users/EditEmployee";
+import Reviews from "./pages/Reviews/Reviews";
 
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/show-employee" element={<ShowEmployee />} />
       <Route path="/show-patient" element={<ShowPatient />} />
       <Route path="/edit-employee" element={<EditEmployee />} />
+      <Route path="/reviews" element={<Reviews />} />
     {/* </Route> */}
   </Routes>
   );

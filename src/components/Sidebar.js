@@ -21,6 +21,7 @@ import { BaseUrl } from "../config";
 // react router dom tool
 import { useNavigate } from "react-router-dom";
 import Confirm from "./Confirm";
+import { MdReviews } from "react-icons/md";
 
 export default function Sidebar() {
   // States
@@ -83,6 +84,7 @@ export default function Sidebar() {
           <Link to="/medications-plans" label="Medications Plans" responsive={responsive} icon= {<FaBookMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
           <Link to="/treatments-plans" label="Treatments Plans" responsive={responsive} icon= {<FaBriefcaseMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
           <Link to="/treatments-notes" label="Treatments Notes" responsive={responsive} icon= {<FaNotesMedical className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
+          <Link to="/reviews" label="Reviews" responsive={responsive} icon= {<MdReviews className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`}/>}/>
           <button
           className={`${responsive ? 'w-full' : 'w-[200px]'} md:w-[220px] p-2 rounded-md cursor-pointer my-2 flex items-center duration-[0.3s] hover:bg-white hover:text-[#089bab]`}
           onClick={() => setLogoutConfirmBox(true)}
@@ -91,10 +93,6 @@ export default function Sidebar() {
             <span className={`${responsive ? "hidden" : "block"} md:block`}>Logout</span>
           </button>
         </ul>
-        <div className="hover:text-[#089bab] hover:bg-white p-2 duration-[0.3s] rounded-md cursor-pointer absolute bottom-[15px] flex items-center">
-            <TbWorld className={`md:mr-3 ${responsive ? '' : 'mr-3'} text-lg md:text-2xl`} />
-            <span className={`md:block ${responsive ? 'hidden' : 'block'}`}>Arabic</span>
-        </div>
       </div>
 
       {/* Show Logout Confirm Box */}
