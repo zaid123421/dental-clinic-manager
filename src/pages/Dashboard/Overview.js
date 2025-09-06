@@ -9,7 +9,18 @@ import { BsThreeDots } from "react-icons/bs";
 import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import errorImage from "../../assets/error.gif";
-
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 export default function Overview() {
   // Modal Informations
   const [modal, setModal] = useState({
@@ -36,7 +47,37 @@ oneMonthLater.setMonth(today.getMonth() + 1);
   const [formDatePatients, setFormDatePatients] = useState(formatDate(today));
   const [toDatePatients, setToDatePatients] = useState(formatDate(oneMonthLater));
   const [frequencyPatients, setFrequencyPatients] = useState("monthly");
+  const [stats] = useState({
+    patients: { new: 0, returning: 5, total: 5 },
+    appointments: { total: 15, scheduled: 3, cancelled: 3, completed: 1 },
+    treatments: { completed: 0, in_progress: 0 },
+    accounts: { created: 0, with_due: 0, total_balance: 0 },
+  });
 
+  // Colors
+  const COLORS = ["#0088FE", "#FF8042", "#00C49F", "#FFBB28"];
+
+  // Data for charts
+  const patientData = [
+    { name: "New", value: stats.patients.new },
+    { name: "Returning", value: stats.patients.returning },
+  ];
+
+  const appointmentData = [
+    { name: "Scheduled", value: stats.appointments.scheduled },
+    { name: "Cancelled", value: stats.appointments.cancelled },
+    { name: "Completed", value: stats.appointments.completed },
+  ];
+
+  const treatmentData = [
+    { name: "Completed", value: stats.treatments.completed },
+    { name: "In Progress", value: stats.treatments.in_progress },
+  ];
+
+  const accountsData = [
+    { name: "Created", value: stats.accounts.created },
+    { name: "With Due", value: stats.accounts.with_due },
+  ];
   // Cookies
   const cookie = new Cookies();
   const token = cookie.get("token");
@@ -282,6 +323,143 @@ oneMonthLater.setMonth(today.getMonth() + 1);
       <Sidebar />
       <div className="page-content p-3 md:py-5 md:p-5 bg-[#089bab1c]">
         <Title label="Overview" />
+
+        <div className="p-6 grid gap-6">
+          {/* Top KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white shadow-md rounded-2xl p-4 text-center">
+              <h3 className="text-gray-600 font-semibold">Patients</h3>
+              <p className="text-2xl font-bold">{stats.patients.total}</p>
+            </div>
+            <div className="bg-white shadow-md rounded-2xl p-4 text-center">
+              <h3 className="text-gray-600 font-semibold">Appointments</h3>
+              <p className="text-2xl font-bold">{stats.appointments.total}</p>
+            </div>
+            <div className="bg-white shadow-md rounded-2xl p-4 text-center">
+              <h3 className="text-gray-600 font-semibold">Treatments</h3>
+              <p className="text-2xl font-bold">
+                {stats.treatments.completed + stats.treatments.in_progress}
+              </p>
+            </div>
+            <div className="bg-white shadow-md rounded-2xl p-4 text-center">
+              <h3 className="text-gray-600 font-semibold">Total Balance</h3>
+              <p className="text-2xl font-bold">${stats.accounts.total_balance}</p>
+            </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Patients */}
+            <div className="bg-white shadow-md rounded-2xl p-4">
+              <h3 className="text-center font-semibold mb-4">Patients</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={patientData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={80}
+                    label
+                  >
+                    {patientData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    content={(props) => {
+                      const { payload } = props;
+                      return (
+                        <ul className="flex justify-center gap-4 mt-2">
+                          {payload.map((entry, index) => (
+                            <li key={`item-${index}`} className="flex items-center gap-2">
+                              <span
+                                className="inline-block w-3 h-3 rounded-full"
+                                style={{ backgroundColor: entry.color }}
+                              />
+                              <span className="font-bold text-gray-800">{entry.value}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Appointments */}
+            <div className="bg-white shadow-md rounded-2xl p-4">
+              <h3 className="text-center font-semibold mb-4">Appointments</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={appointmentData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={80}
+                    label
+                  >
+                    {appointmentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    content={(props) => {
+                      const { payload } = props;
+                      return (
+                        <ul className="flex justify-center gap-4 mt-2">
+                          {payload.map((entry, index) => (
+                            <li key={`item-${index}`} className="flex items-center gap-2">
+                              <span
+                                className="inline-block w-3 h-3 rounded-full"
+                                style={{ backgroundColor: entry.color }}
+                              />
+                              <span className="font-semibold text-gray-700">{entry.value}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Treatments */}
+            <div className="bg-white shadow-md rounded-2xl p-4">
+              <h3 className="text-center font-semibold mb-4">Treatments</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={treatmentData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#0088FE" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Accounts */}
+            <div className="bg-white shadow-md rounded-2xl p-4">
+              <h3 className="text-center font-semibold mb-4">Accounts</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={accountsData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#FF8042" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Reports Section */}
         <div>
           <h2 className="font-bold text-2xl my-4">Reports Section</h2>
           <h2 className="font-bold text-xl mb-4">Finance Reports</h2>
@@ -444,8 +622,8 @@ oneMonthLater.setMonth(today.getMonth() + 1);
           >
             Apply Filter
           </button>
-          <button onClick={() => downloadFinancePdf()} className="border-2 border-red-500 bg-red-500 px-4 rounded-xl text-white font-semibold hover:bg-transparent duration-300 hover:text-black">Download Pdf</button>
-          <button onClick={() => downloadFinanceExcel()} className="border-2 border-green-500 bg-green-500 px-4 rounded-xl text-white font-semibold hover:bg-transparent duration-300 hover:text-black">Download Excel</button>
+          <button onClick={() => downloadPatientsPdf()} className="border-2 border-red-500 bg-red-500 px-4 rounded-xl text-white font-semibold hover:bg-transparent duration-300 hover:text-black">Download Pdf</button>
+          <button onClick={() => downloadPatientsExcel()} className="border-2 border-green-500 bg-green-500 px-4 rounded-xl text-white font-semibold hover:bg-transparent duration-300 hover:text-black">Download Excel</button>
           </div>
           {/* Results */}
           <div className="mt-5 realtive">
