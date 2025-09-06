@@ -9,6 +9,8 @@ import Title from "../../components/Title";
 import Loading from "../../components/Loading";
 import { BaseUrl } from "../../config";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FiPlus } from "react-icons/fi";
+import { GoDash } from "react-icons/go";
 
 export default function Reviews() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +21,11 @@ export default function Reviews() {
 
   const cookie = new Cookies();
   const token = cookie.get("token");
+
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+  });
 
   useEffect(() => {
     setIsLoading(true);
@@ -32,22 +39,54 @@ export default function Reviews() {
   }, []);
 
   useEffect(() => {
-    if (selectedDoctorId === "All") {
-      setReviews([]);
-      return;
-    }
+  if (selectedDoctorId === "All") {
+    setReviews([]);
+    return;
+  }
 
+  const fetchReviews = async (page = 1) => {
     setIsLoading(true);
-    axios
-  .get(`${BaseUrl}/doctor/${selectedDoctorId}/review`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  .then((res) => {
-    setReviews(Array.isArray(res.data.data.data) ? res.data.data.data : []);
-  })
-      .catch((err) => console.log(err))
-      .finally(() => setIsLoading(false));
-  }, [selectedDoctorId]);
+    try {
+      const res = await axios.get(
+        `${BaseUrl}/doctor/${selectedDoctorId}/review?page=${page}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = res.data.data;
+      setReviews(Array.isArray(data.data) ? data.data : []);
+      setPagination({
+        current_page: data.current_page,
+        last_page: data.last_page,
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchReviews(pagination.current_page);
+  }, [selectedDoctorId, pagination.current_page]);
+
+  const handleDecrementPage = () => {
+  if (pagination.current_page > 1) {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: prev.current_page - 1,
+    }));
+  }
+};
+
+  const handleIncrementPage = () => {
+    if (pagination.current_page < pagination.last_page) {
+      setPagination((prev) => ({
+        ...prev,
+        current_page: prev.current_page + 1,
+      }));
+    }
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -77,7 +116,7 @@ export default function Reviews() {
           <select
             value={selectedDoctorId}
             onChange={(e) => setSelectedDoctorId(e.target.value)}
-            className="w-64 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#089bab]"
+            className="shadow-lg cursor-pointer w-64 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#089bab]"
           >
             <option value="All">All Doctors</option>
             {doctors.map((doc) => (
@@ -146,7 +185,38 @@ export default function Reviews() {
             <p className="text-gray-500 col-span-full text-center">No reviews found.</p>
           )}
         </div>
+        {/* Pagination Section */}
+        {selectedDoctorId !== "All" && filteredReviews.length > 0 && (
+          <div className="flex justify-center items-center w-full mt-5 text-xl">
+            <button
+              onClick={handleDecrementPage}
+              disabled={pagination.current_page === 1}
+              className={`bg-[#089bab] border-2 border-[#089bab] text-white w-[25px] h-[25px] rounded-full flex justify-center items-center duration-300 ${
+                pagination.current_page === 1
+                  ? "bg-gray-400 border-gray-400 cursor-not-allowed hover:text-white"
+                  : "hover:bg-transparent hover:text-black"
+              }`}
+            >
+              <GoDash className="text-sm" />
+            </button>
 
+            <span className="text-2xl font-semibold mx-5">
+              {pagination.current_page}
+            </span>
+
+            <button
+              onClick={handleIncrementPage}
+              disabled={pagination.current_page === pagination.last_page}
+              className={`bg-[#089bab] border-2 border-[#089bab] text-white w-[25px] h-[25px] rounded-full flex justify-center items-center duration-300 ${
+                pagination.current_page === pagination.last_page
+                  ? "bg-gray-400 border-gray-400 cursor-not-allowed hover:text-white"
+                  : "hover:bg-transparent hover:text-black"
+              }`}
+            >
+              <FiPlus className="text-sm" />
+            </button>
+          </div>
+        )}
       </div>
 
       {isLoading && <Loading />}
