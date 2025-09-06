@@ -27,7 +27,7 @@ export default function Login() {
     setError("");
     try {
       const res = await axios.post(`${BaseUrl}/manager/login`, formData, {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Accept": "application/json" },
       });
       cookie.set("token", res.data.data.token, { path: "/" });
       cookie.set("username", res.data.data.name, { path: "/" });
