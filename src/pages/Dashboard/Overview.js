@@ -47,37 +47,37 @@ oneMonthLater.setMonth(today.getMonth() + 1);
   const [formDatePatients, setFormDatePatients] = useState(formatDate(today));
   const [toDatePatients, setToDatePatients] = useState(formatDate(oneMonthLater));
   const [frequencyPatients, setFrequencyPatients] = useState("monthly");
-  const [stats] = useState({
-    patients: { new: 0, returning: 5, total: 5 },
-    appointments: { total: 15, scheduled: 3, cancelled: 3, completed: 1 },
+
+  const [stats, setStats] = useState({
+    patients: { new: 0, returning: 0, total: 0 },
+    appointments: { total: 0, scheduled: 0, cancelled: 0, completed: 0 },
     treatments: { completed: 0, in_progress: 0 },
     accounts: { created: 0, with_due: 0, total_balance: 0 },
   });
 
-  // Colors
   const COLORS = ["#0088FE", "#FF8042", "#00C49F", "#FFBB28"];
 
-  // Data for charts
-  const patientData = [
-    { name: "New", value: stats.patients.new },
-    { name: "Returning", value: stats.patients.returning },
-  ];
+const patientData = [
+  { name: "New", value: Number(stats?.patients?.new) || 0 },
+  { name: "Returning", value: Number(stats?.patients?.returning) || 0 },
+];
 
-  const appointmentData = [
-    { name: "Scheduled", value: stats.appointments.scheduled },
-    { name: "Cancelled", value: stats.appointments.cancelled },
-    { name: "Completed", value: stats.appointments.completed },
-  ];
+const appointmentData = [
+  { name: "Scheduled", value: Number(stats?.appointments?.scheduled) || 0 },
+  { name: "Cancelled", value: Number(stats?.appointments?.cancelled) || 0 },
+  { name: "Completed", value: Number(stats?.appointments?.completed) || 0 },
+];
 
-  const treatmentData = [
-    { name: "Completed", value: stats.treatments.completed },
-    { name: "In Progress", value: stats.treatments.in_progress },
-  ];
+const treatmentData = [
+  { name: "Completed", value: Number(stats?.treatments?.completed) || 0 },
+  { name: "In Progress", value: Number(stats?.treatments?.in_progress) || 0 },
+];
 
-  const accountsData = [
-    { name: "Created", value: stats.accounts.created },
-    { name: "With Due", value: stats.accounts.with_due },
-  ];
+const accountsData = [
+  { name: "Created", value: Number(stats?.accounts?.created) || 0 },
+  { name: "With Due", value: Number(stats?.accounts?.with_due) || 0 },
+];
+
   // Cookies
   const cookie = new Cookies();
   const token = cookie.get("token");
@@ -95,6 +95,28 @@ oneMonthLater.setMonth(today.getMonth() + 1);
     sendFinance();
     sendPatients();
   }, []);
+
+    useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get(`${BaseUrl}/reports/dashboard`,{
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.data?.status === 1) {
+          setStats(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  console.log(stats);
 
   function formatDate(date) {
   return date.toISOString().split("T")[0];
@@ -369,22 +391,24 @@ oneMonthLater.setMonth(today.getMonth() + 1);
                   <Legend
                     verticalAlign="bottom"
                     align="center"
-                    content={(props) => {
-                      const { payload } = props;
-                      return (
-                        <ul className="flex justify-center gap-4 mt-2">
-                          {payload.map((entry, index) => (
-                            <li key={`item-${index}`} className="flex items-center gap-2">
-                              <span
-                                className="inline-block w-3 h-3 rounded-full"
-                                style={{ backgroundColor: entry.color }}
-                              />
-                              <span className="font-bold text-gray-800">{entry.value}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      );
-                    }}
+                    content={({ payload }) => (
+                      <ul className="flex justify-center gap-4 mt-2">
+                        {payload.map((entry, index) => (
+                          <li
+                            key={`item-${index}`}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className="inline-block w-3 h-3 rounded-full"
+                              style={{ backgroundColor: entry.color }}
+                            />
+                            <span className="font-bold text-gray-800">
+                              {entry.value}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -410,22 +434,24 @@ oneMonthLater.setMonth(today.getMonth() + 1);
                   <Legend
                     verticalAlign="bottom"
                     align="center"
-                    content={(props) => {
-                      const { payload } = props;
-                      return (
-                        <ul className="flex justify-center gap-4 mt-2">
-                          {payload.map((entry, index) => (
-                            <li key={`item-${index}`} className="flex items-center gap-2">
-                              <span
-                                className="inline-block w-3 h-3 rounded-full"
-                                style={{ backgroundColor: entry.color }}
-                              />
-                              <span className="font-semibold text-gray-700">{entry.value}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      );
-                    }}
+                    content={({ payload }) => (
+                      <ul className="flex justify-center gap-4 mt-2">
+                        {payload.map((entry, index) => (
+                          <li
+                            key={`item-${index}`}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className="inline-block w-3 h-3 rounded-full"
+                              style={{ backgroundColor: entry.color }}
+                            />
+                            <span className="font-semibold text-gray-700">
+                              {entry.value}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   />
                 </PieChart>
               </ResponsiveContainer>
